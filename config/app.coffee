@@ -156,7 +156,7 @@ app = ( ->
           res.setHeader key, value
         stream = fs.createReadStream src, { start: ini, end: end }
         stream.on 'end', ->
-          console.info "Streaming #{src} #{ini}-#{end}", process.memoryUsage()
+          # console.info "Streaming #{src} #{ini}-#{end}", process.memoryUsage()
           return options.complete null, ini, end
         stream.on 'error', (err) ->
           throw "ERRSTREAM #{src} #{ini}-#{end} #{err.stack || err.message}"
@@ -259,7 +259,7 @@ app = ( ->
         res.render 'index'
       else res.render 'index'
 
-  app.get /^(.*)\.(thumbnail|rawthumbnail)$/, (req, res) ->
+  app.get /^(.*)\.thumbnail$/, (req, res) ->
     src = "/media/var#{_.util.execsafe req.params[0]}"
     tag = _.util.sha1sum src
 
@@ -326,8 +326,8 @@ app = ( ->
       ], (err) ->
         fs.unlinkSync tmp if fs.existsSync tmp
         if err
-          console.error err
-          res.writeHead 500
+          console.error err, src
+          res.writeHead 404
           return res.end err.message
         res.setHeader 'Cache-Control', 'public'
         res.setHeader 'Content-Type', img.mime

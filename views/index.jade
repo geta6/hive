@@ -18,16 +18,39 @@ html
         li: a#stream(href='javascript:void(0)'): i.icon.flash
         li: a#hearts(href='javascript:void(0)'): i.icon.heart
       ul.nav.site
-        li: a(href='javascript:void(0)'): i.icon.clock
+        li
+          a#sortby(href='javascript:void(0)')
+            i.js_sort.icon.clock
+            i.js_order.icon.down_arrow
+          ul.open
+            li: a#sorby_time_asc.sortby(href='javascript:void(0)')
+              i.icon.clock
+              i.icon.up_arrow
+            li: a#sorby_time_dsc.sortby(href='javascript:void(0)')
+              i.icon.clock
+              i.icon.down_arrow
+            li: a#sorby_name_asc.sortby(href='javascript:void(0)')
+              i.icon.font
+              i.icon.up_arrow
+            li: a#sorby_name_dsc.sortby(href='javascript:void(0)')
+              i.icon.font
+              i.icon.down_arrow
         li: a(href='javascript:void(0)'): i.icon.user
-        li: a(href='javascript:void(0)'): i.icon.search
+        li: a#search(href='javascript:void(0)'): i.icon.search
+        ul.open
+          li: i.icon.search
       ul.nav.load
 
     nav
     article
 
+    script#tp_void(type='text/template')
+      div#error
+        h1 x x
+          h2 ⌒
+        p No content found.
     script#tp_list(type='text/template')
-      a(href!="#<%= path %>").list
+      a.list(href!='#<%= path %>', x-name!='<%= name %>', x-time!='<%= new Date(time).getTime() %>')
         .view
           <% if (mime == 'text/directory') { %>
           i.icon.folder_open
@@ -42,7 +65,7 @@ html
           <% } else if (/text/.test(mime)) { %>
           i.icon.notes
           <% } else { %>
-          i.icon.history <%= mime %>
+          i.icon.file
           <% } %>
           img.lazy(src='', data-original!='<%= path %>.thumbnail', width='80px', height='80px')
         .name <%= name %>
@@ -57,12 +80,13 @@ html
         <% } %>
     script#tp_file(type='text/template')
       .preview
-        embed(src!="<%= path %>")
+        video(src!="<%= path %>", controls)
+        audio(src!="<%= path %>", controls)
       div <%= mime %>
     script#tp_auth(type='text/template')
       form#auth(method='POST', action='/session')
-        input#user(type='username', name='username', placeholder='username')
-        input#pass(type='password', name='password', placeholder='password')
+        input#username(type='username', name='username', placeholder='username')
+        input#password(type='password', name='password', placeholder='password')
         input(type='submit')
 
     script(src='/lib/jquery.min.js')
