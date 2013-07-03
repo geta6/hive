@@ -290,6 +290,7 @@ app = ( ->
         (next) ->
           if /^audio/.test mim
             return (new meta fs.createReadStream src).on 'metadata', (id3) ->
+              return next new Error 'no thumbnail' unless id3.picture[0]
               img.mime = mime.lookup id3.picture[0].format
               img.data = id3.picture[0].data
               return next null
