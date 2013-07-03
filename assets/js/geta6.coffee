@@ -53,11 +53,16 @@ class Geta6
     @socket.on 'fetch', (data) =>
       if @authorized
         if /::stream/.test @location()
-          ($ '#stream').addClass 'selected'
+          (@$ '#stream').addClass 'selected'
           @setting.sort = 'time'
           @setting.order = 'desc'
         else
-          ($ '#stream').removeClass 'selected'
+          (@$ '#stream').removeClass 'selected'
+        if /::search/.test @location()
+          (@$ '#search').addClass 'selected'
+          (@$ '#searchbox input').val @location().replace /^.*::search\/(.*)$/, '$1'
+        else
+          (@$ '#search').removeClass 'selected'
         if (_.isArray data) and 0 is data.length
           console.log data
           @render 'void', {}, =>
@@ -74,21 +79,42 @@ class Geta6
       @negotiation ($ '#username').val(), ($ '#password').val()
     (@$ '#browse').on 'click', => @viewmode()
     (@$ '#stream').on 'click', =>
-      if 'stream' isnt _.last window.location.hash.split '::'
-        window.location.hash = "#{window.location.hash}::stream"
-    (@$ '#sortby').on 'click', => (@$ '#sortby').siblings('.open').slideToggle @animationDuration
+      hash = (@location().split '::')[0]
+      window.location.hash = "#{hash}::stream"
+
+    (@$ '#sortby').on 'click mouseenter', => (@$ '#sortby .open').stop().slideDown @animationDuration
+    (@$ '#sortby').on 'mouseleave', => (@$ '#sortby .open').stop().slideUp @animationDuration
     (@$ '#sorby_time_asc').on 'click', => @viewsort 'time', 'asc'
     (@$ '#sorby_time_dsc').on 'click', => @viewsort 'time', 'desc'
     (@$ '#sorby_name_asc').on 'click', => @viewsort 'name', 'asc'
     (@$ '#sorby_name_dsc').on 'click', => @viewsort 'name', 'desc'
-    (@$ '#search').on 'click', => (@$ '#search').siblings('.open').slideToggle @animationDuration
+
+    (@$ '#signed').on 'click mouseenter', => (@$ '#signed .open').stop().slideDown @animationDuration
+    (@$ '#signed').on 'mouseleave', => (@$ '#signed .open').stop().slideUp @animationDuration
+    (@$ '#signout').on 'click', => @negotiation no, no
+
+    (@$ '#search').on 'click', =>
+      (@$ '#searchbox').animate top: 0, @animationDuration, =>
+        (@$ '#searchbox input').focus().select()
+    (@$ '#searchbox input').on 'blur', =>
+      (@$ '#searchbox').animate top: -1*(@$ '#searchbox').height()-1, @animationDuration
+    (@$ '#searchbox input').on 'keyup', (event) =>
+      if 13 is event.keyCode
+        _val = (@$ '#searchbox input').val()
+        if 0 isnt _val.length
+          hash = (@location().split '::')[0]
+          window.location.hash = "#{hash}::search/#{_val}"
+        (@$ '#searchbox input').trigger 'blur'
 
     # Global
     ($ window).on 'hashchange', =>
+      @sync()
       @socket.emit 'fetch', @location()
     ($ document).on 'click', (event) =>
+      # touch device
       unless ($ event.target).parents('header').size()
         (@$ '#sortby').siblings('.open').slideUp @animationDuration
+        (@$ '#signed').siblings('.open').slideUp @animationDuration
 
     @socket.emit 'sync'
 
@@ -163,22 +189,28 @@ class Geta6
     return window.location.hash.substr 1
 
   navigation: (done = ->) ->
-    (@$ 'nav').html ''
-    divs = []
-    divs.push (@$ 'nav').append ($ '<a>').attr(href: "#/").html 'index'
-    breads = _.compact @location().split '/'
-    prefix = @location().split '::'
-    if 1 < prefix.length
-      breads = _.compact @location().replace(/::.*$/, '').split '/'
-      if 'stream' is _.last prefix
-        breads.push "Latest #{($ '.list').length}"
-    for bread, i in breads
-      divs.push ($ '<i>').html('/')
-      if i+1 < breads.length
-        divs.push ($ '<a>').attr(href: "#/#{breads.slice(0,i+1).join '/'}").html decodeURI bread
-    divs.push (($ '<span>').html decodeURI bread) if bread
-    (@$ 'nav').append div for div in divs
-    (@$ 'nav').animate marginTop: (if bread then (@$ 'header').height() else -1), 240, => done()
+    if @authorized
+      (@$ 'nav').html ''
+      divs = []
+      divs.push (@$ 'nav').append ($ '<a>').attr(href: "#/").html 'index'
+      prefix = @location().split '::'
+      breads = _.compact prefix[0].split '/'
+      if 1 < prefix.length
+        breads = _.compact @location().replace(/::.*$/, '').split '/'
+        if 'stream' is _.last prefix
+          breads.push "Latest #{($ '.list').length}"
+        if /^search\/.+/.test _.last prefix
+          breads.push "Search '#{_.escape (_.last prefix).replace /^search\/(.*)$/, '$1' }'"
+      for bread, i in breads
+        divs.push ($ '<i>').html('/')
+        if i+1 < breads.length
+          divs.push ($ '<a>').attr(href: "#/#{breads.slice(0,i+1).join '/'}").html decodeURI bread
+      divs.push (($ '<span>').html decodeURI bread) if bread
+      (@$ 'nav').append div for div in divs
+      (@$ 'nav').animate marginTop: (if bread then (@$ 'header').height() else -1), @animationDuration, => done()
+    else
+      (@$ 'nav').html '<p>authorize</p>'
+      (@$ 'nav').animate marginTop: -1, @animationDuration, => done()
 
   negotiation: (user, pass, done = ->) ->
     @load yes
@@ -187,7 +219,7 @@ class Geta6
       data: { username: user, password: pass }
       complete: (xhr, body) =>
         @load no
-        if body is 'success'
+        if 300 > xhr.status
           return window.location.reload()
         if 500 > xhr.status
           @flash 'Name or Pass Mismatch', 'failure'
@@ -240,7 +272,6 @@ class Geta6
 
     @lazyLoadedImages = no
     @lazyload() if force
-    @sync()
 
   viewmode: (force = no) ->
     @setting or= {}
@@ -254,4 +285,3 @@ class Geta6
     else
       (@$ '#browse i').removeClass('show_thumbnails').addClass('show_thumbnails_with_lines')
       ($ 'article .list').removeClass('block').addClass('lines')
-    @sync()

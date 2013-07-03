@@ -391,25 +391,12 @@ io = ( ->
         user.conf = conf if conf
         user.save -> socket.emit 'sync', user
 
-    socket.on 'stream', (uri) ->
-      return null unless session
-      console.log "stream from #{session.name}"
-      dst = path.join '/media', 'var', decodeURI uri
-      res = []
-      exec "find '#{_.util.execsafe dst}' -type f -print0 | xargs -0 stat --format '%Y %n' | grep -v '/\\.' | sort -k 1 | tail -50", (err, stdout) ->
-        console.error err if err
-        res = _.util.reject _.map (_.str.trim(stdout).split '\n'), (src) -> src.replace /^[0-9]+ /, ''
-        res = _.map res, (src) ->
-          _.util.status src.replace /\/\//g, '/'
-        res = _.sortBy res, (stat) -> stat.time
-        socket.emit 'result', res
-
     socket.on 'fetch', (uri) ->
       return null unless session
-      console.log "fetch from #{session.name}"
       fix = if (1 < (_uri = uri.split '::').length) then _uri[1] else null
       uri = if (1 < _uri.length) then _uri[0] else uri
       dst = path.join '/media', 'var', decodeURI uri
+      console.log "fetch from #{session?.name}", dst, fix
       unless fix
         data = []
         if (fs.existsSync dst)
@@ -420,13 +407,21 @@ io = ( ->
           else
             data = _.util.status dst
         socket.emit 'fetch', data
-      else
-        if fix is 'stream'
-          exec "find '#{_.util.execsafe dst}' -type f -print0 | xargs -0 stat --format '%Y %n' | grep -v '/\\.' | sort -k 1 | tail -50", (err, stdout) ->
-            console.error err if err
-            data = _.util.reject _.map (_.str.trim(stdout).split '\n'), (src) -> src.replace /^[0-9]+ /, ''
-            data = _.map data, (src) ->
-              _.util.status src.replace /\/\//g, '/'
-            data = _.sortBy data, (stat) -> stat.time
-            socket.emit 'fetch', data
+      if fix is 'stream'
+        exec "find '#{_.util.execsafe dst}' -type f -print0 | xargs -0 stat --format '%Y %n' | grep -v '/\\.' | sort -k 1 | tail -50", (err, stdout) ->
+          console.error err if err
+          data = _.util.reject _.map (_.str.trim(stdout).split '\n'), (src) -> src.replace /^[0-9]+ /, ''
+          data = _.map data, (src) ->
+            _.util.status src.replace /\/\//g, '/'
+          data = _.sortBy data, (stat) -> stat.time
+          socket.emit 'fetch', data
+      if /search/.test fix
+        val = fix.replace /^search\//, ''
+        exec "find '#{_.util.execsafe dst}' -iname '*#{_.util.execsafe val}*' -print0 | xargs -0 stat --format '%Y %n' | grep -v '/\\.' | sort -k 1", (err, stdout) ->
+          console.error err if err
+          data = _.util.reject _.map (_.str.trim(stdout).split '\n'), (src) -> src.replace /^[0-9]+ /, ''
+          data = _.map data, (src) ->
+            _.util.status src.replace /\/\//g, '/'
+          data = _.sortBy data, (stat) -> stat.time
+          socket.emit 'fetch', data
 )()

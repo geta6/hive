@@ -13,13 +13,14 @@ html
   body
     aside
     header
+      #searchbox: input(placeholder='Search')
       ul.nav.page
         li: a#browse(href='javascript:void(0)'): i.icon.show_thumbnails_with_lines
         li: a#stream(href='javascript:void(0)'): i.icon.flash
-        li: a#hearts(href='javascript:void(0)'): i.icon.heart
+        //- li: a#hearts(href='javascript:void(0)'): i.icon.heart
       ul.nav.site
-        li
-          a#sortby(href='javascript:void(0)')
+        li#sortby
+          a(href='javascript:void(0)')
             i.js_sort.icon.clock
             i.js_order.icon.down_arrow
           ul.open
@@ -35,10 +36,11 @@ html
             li: a#sorby_name_dsc.sortby(href='javascript:void(0)')
               i.icon.font
               i.icon.down_arrow
-        li: a(href='javascript:void(0)'): i.icon.user
-        li: a#search(href='javascript:void(0)'): i.icon.search
-        ul.open
-          li: i.icon.search
+        li#signed
+          a(href='javascript:void(0)'): i.icon.user
+          ul.open
+            li: a#signout(href='javascript:void(0)'): i.icon.power
+        li#search: a(href='javascript:void(0)'): i.icon.search
       ul.nav.load
 
     nav

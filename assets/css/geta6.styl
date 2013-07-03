@@ -35,10 +35,35 @@ a
   &:hover
     color $hovercolor
 
+input
+  position relative
+  display inline-block
+  margin 0
+  padding 5px 10px
+  font-size inherit
+  font-family inherit
+  line-height inherit !important
+  color #333
+  white-space nowrap
+  background-color #FFF
+  background-repeat no-repeat
+  background-position right center
+  border 1px solid #CCC
+  box-shadow inset 0 1px 2px rgba(0,0,0,0.075)
+  transition all 0.15s ease-in
+  touch-callout none
+  appearance none
+  resize none
+  outline none
+  &:focus, &.focus
+    border-color #51a7e8
+    box-shadow inset 0 1px 2px rgba(0,0,0,0.075),0 0 5px rgba(81,167,232,0.5)
+
+
 // Element
 
 aside
-  z-index 1000
+  z-index 100
   location fixed $gridbase 0 auto auto
   padding 5px 5px 0 0
   width auto
@@ -64,11 +89,19 @@ aside
     clearfix()
 
 header
-  z-index 900
+  z-index 110
   location fixed 0 0 auto 0
   height $gridbase
   border-bottom 1px solid $bordercolor
   background $groundcolor
+  #searchbox
+    z-index 109
+    location absolute -1*$gridbase 0 auto 0
+    height $gridbase
+    background $groundcolor
+    input
+      height $gridbase
+      width 100%
   .nav
     display none
     height $gridbase
@@ -77,16 +110,18 @@ header
       font-size 12px
     .selected
       color $activecolor
+      *
+        color $activecolor
     .open
       display none
       location absolute $gridbase 0 auto -1px
-      top $gridbase
       width $gridbase
       border 1px solid $bordercolor
       border-top none
       background $groundcolor
       li
-        display inline-block
+        display block
+        position relative
         vertical-align top
         font-size 10px
         border-top none
@@ -96,6 +131,7 @@ header
           border-bottom none
         i:first-child
           margin-right 2px
+
     li
       display inline-block
       position relative
@@ -126,8 +162,7 @@ header
 nav
   margin-top -1px
   padding 10px
-  height $gridbase
-  line-height $gridbase - 20px
+  line-height $gridbase - 21px
   border-bottom 1px solid $bordercolor
   i
     padding 0 5px
@@ -153,12 +188,12 @@ article
 
     &.lines
       .name
-        padding 0 0 0 $browseheight
-        line-height $browseheight * (3/5)px
+        padding 0 $browseheight
         width 100%
+        line-height $browseheight * (3/5)px
         overflow ellipsis
       .info
-        padding 0 0 0 $browseheight
+        padding 0 $browseheight
         width 100%
         line-height $browseheight * (2/5)px
         overflow ellipsis
