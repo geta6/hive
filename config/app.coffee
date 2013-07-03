@@ -51,7 +51,7 @@ express = require 'express'
       name: path.basename src
       mime: stat.mime
       size: stat.size
-      time: stat.ctime
+      time: stat.mtime
 )()
 
 # Application
