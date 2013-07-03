@@ -1,4 +1,6 @@
 {
+  "port": 3050,
+  "env": "production",
   "watch": true,
   "assets": "assets",
   "output": "public",
