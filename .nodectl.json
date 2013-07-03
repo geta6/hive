@@ -1,0 +1,8 @@
+{
+  "watch": true,
+  "assets": "assets",
+  "output": "public",
+  "minify": true,
+  "main": "config/app.coffee",
+  "exec": "config/ini.coffee"
+}

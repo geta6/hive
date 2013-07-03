@@ -1,0 +1,22 @@
+{
+  "name": "geta6.net",
+  "version": "3.1.0",
+  "dependencies": {
+    "async": "*",
+    "connect-redis": "*",
+    "express": "*",
+    "jade": "*",
+    "mime": "*",
+    "mkdirp": "*",
+    "moment": "*",
+    "mongoose": "*",
+    "musicmetadata": "*",
+    "nib": "*",
+    "passport": "*",
+    "passport-local": "*",
+    "socket.io": "*",
+    "stylus": "*",
+    "underscore": "*",
+    "underscore.string": "*"
+  }
+}

@@ -1,0 +1,24 @@
+!!! 5
+html
+  head
+    meta(name='viewport', content='width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no')
+    link(rel='stylesheet', href='//fonts.googleapis.com/css?family=Open+Sans:400,600,300')
+    link(rel='stylesheet', href='/css/error.css')
+    title Oh no &#65381; geta6netbuntu
+
+  body
+    .container
+      if res.statusCode == 500
+        h1 What?!
+        p Your browser did something unexpected. Please contact us if the problem persists.
+
+      else
+        h1= res.statusCode
+          h2 ⌒
+        p This is not the web page you are looking for.
+
+      //- ul
+      //-   li: a(href='/') Getabuntu
+      //-   li: a(href='/forum') Forum
+      //-   li: a(href='/status') Status
+      //-   li: a(href='//twitter.com/getabuntu') @getabuntu

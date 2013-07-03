@@ -1,0 +1,195 @@
+@import 'nib'
+@import 'utils'
+
+global-reset()
+
+$gridbase = 48px
+$browseheight = 36px
+$blocksheight = 24px
+$lettercolor = #222
+$bordercolor = #CCC
+$browsecolor = #DDD
+$groundcolor = #EEE
+$linkcolor = #777
+$hovercolor = #4A5
+
+*
+  -webkit-text-size-adjust 100%
+  box-sizing border-box
+  vertical-align top
+
+html, body
+  background $groundcolor
+  font-size 12px
+  font-family 'Open Sans', Sans-Serif
+  font-smoothing antialiased
+  color $lettercolor
+
+// Elements
+
+a
+  color $linkcolor
+  text-decoration none
+  transition-duration .12s
+  &:hover
+    color $hovercolor
+
+// Element
+
+aside
+  z-index 1000
+  location fixed $gridbase 0 auto auto
+  padding 5px 5px 0 0
+  width auto
+  & > div
+    opacity 0
+  .flash
+    float right
+    display block
+    margin 2px
+    padding 3px 5px
+    color white
+    font-weight bold
+    font-size 10px
+    background rgba(0,0,0,.72)
+    border-radius 2px
+    &.success
+      background rgba(20,180,20,.72)
+    &.failure
+      background rgba(180,20,20,.72)
+    &.debug
+      background rgba(180,180,180,.72)
+  .clear
+    clearfix()
+
+header
+  z-index 900
+  location fixed 0 0 auto 0
+  height $gridbase
+  border-bottom 1px solid $bordercolor
+  background $groundcolor
+  .nav
+    display none
+    height $gridbase
+    line-height $gridbase
+    li
+      display inline-block
+      position relative
+      min-width $gridbase - 1px
+      height $gridbase - 1px
+      font-size 16px
+      text-align center
+      color #777
+      a
+        display block
+        location absolute 0 0 0 0
+    &.page
+      float left
+      li
+        border-right 1px solid $bordercolor
+    &.site
+      float right
+      li
+        border-left 1px solid $bordercolor
+    &.load
+      display none
+      location absolute 0 0 auto 0
+      height 4px
+      background-color $groundcolor
+      background-image url('../img/bar.png')
+      border-bottom 1px solid $bordercolor
+
+nav
+  padding 0 10px
+  height $gridbase
+  line-height $gridbase
+  border-bottom 1px solid $bordercolor
+  i
+    padding 0 5px
+    font-style normal
+    color #BBB
+
+article
+  .list
+    position relative
+    display block
+    min-height $browseheight
+    border-bottom 1px solid $browsecolor
+    transition-duration .24s
+    .name
+      font-weight bold
+    .info
+      font-size 10px
+      .size
+        padding-right 10px
+    .view
+      position relative
+      i
+        z-index 0
+        position absolute
+        display block
+        top 50%
+        left 50%
+        margin-left -40px
+        margin-top -40px
+        width 80px
+        height 80px
+        text-align center
+        line-height 80px
+
+    &:hover
+      background #FFF
+    &.lines
+      .name
+        padding 0 10px
+        line-height $browseheight * (3/5)px
+        width 100%
+        overflow ellipsis
+      .info
+        padding 0 11px
+        width 100%
+        line-height $browseheight * (2/5)px
+        overflow ellipsis
+      .view
+        display none
+    &.block
+      margin 0
+      padding 5px
+      line-height $blocksheight
+      float left
+      display inline-block
+      border-right 1px solid $browsecolor
+      .name, .info
+        text-align center
+        overflow ellipsis
+      .view
+        img
+          z-index 10
+          position relative
+          display block
+          margin 10px auto
+
+@media only screen and (min-width: 1081px)
+  article .block
+    width (100/6)%
+    &:nth-child(6n)
+      border-right none !important
+
+@media only screen and (min-width:841px) and (max-width: 1080px)
+  article .block
+    width (100/5)%
+    &:nth-child(5n)
+      border-right none !important
+
+@media only screen and (min-width:601px) and (max-width: 840px)
+  article .block
+    width (100/4)%
+    &:nth-child(4n)
+      border-right none !important
+
+@media only screen and (max-width: 600px)
+  article .block
+    width (100/3)%
+    &:nth-child(3n)
+      border-right none !important
+
