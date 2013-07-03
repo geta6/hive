@@ -1,6 +1,6 @@
 {
-  "port": 3050,
-  "env": "production",
+  "port": 3000,
+  "env": "development",
   "watch": true,
   "assets": "assets",
   "output": "public",

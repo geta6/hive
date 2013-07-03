@@ -5,6 +5,7 @@
 .AppleDesktop
 
 node_modules
+.nodectl.json
 
 public/css
 public/js
