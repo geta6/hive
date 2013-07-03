@@ -82,9 +82,12 @@ html
         <% } %>
     script#tp_file(type='text/template')
       .preview
+        #error
+          h1 under construction
         video(src!="<%= path %>", controls)
         audio(src!="<%= path %>", controls)
-      div <%= mime %>
+        div <%= mime %>
+        a(href!="<%= path %>") preview
     script#tp_auth(type='text/template')
       form#auth(method='POST', action='/session')
         input#username(type='username', name='username', placeholder='username')
