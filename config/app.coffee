@@ -261,7 +261,7 @@ app = ( ->
 
   app.get /^(.*)\.thumbnail$/, (req, res) ->
     src = "/media/var#{_.util.execsafe req.params[0]}"
-    exec "find '#{src}' -type f -print0 | xargs -0 stat --format '%Y %n' | grep -v '/\\.' | sort -k 1 | tail -1", (err, stdout) ->
+    exec "find '#{src}' -type f -print0 | xargs -0 stat --format '%Y %n' | grep -v '/\\.(Apple|DS_)' | sort -k 1 | tail -1", (err, stdout) ->
       tag = _.util.sha1sum src
       res.setHeader 'ETag', tag
       req.connection.setTimeout 5000
@@ -324,7 +324,7 @@ app = ( ->
       ], (err) ->
         fs.unlinkSync tmp if fs.existsSync tmp
         if err
-          console.error err, src
+          console.error err, src, mim
           res.writeHead 404
           return res.end err.message
         res.setHeader 'Cache-Control', 'public'

@@ -6,6 +6,7 @@
 
 node_modules
 .nodectl.json
+.nodectl.run
 
 public/css
 public/js
