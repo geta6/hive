@@ -37,7 +37,7 @@ express = require 'express'
         return yes if /^(\.DS.+|Network Trash Folder|Temporary Items|\.Apple.*)$/.test src
         return yes if src.length is 0
     datasize: (size, i = 0) ->
-      units = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+      units = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB']
       ++i while (size/=1024) >= 1024
       return "#{size.toFixed(1)} #{units[i+1]}"
     status: (src) ->
@@ -271,7 +271,7 @@ app = ( ->
       src = (_.str.trim stdout).replace /^[0-9]+ /, ''
       dst = path.resolve 'tmp', 'thumb', "#{tag}.jpg"
       img = { mime: 'application/octet-stream', data: new Buffer 0 }
-      mim = mime.lookup src
+      mim = mime.lookup path.basename src
       tmp = ''
       if fs.existsSync dst
         img.mime = mime.lookup 'jpg'
