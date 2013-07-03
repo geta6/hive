@@ -261,18 +261,15 @@ app = ( ->
 
   app.get /^(.*)\.thumbnail$/, (req, res) ->
     src = "/media/var#{_.util.execsafe req.params[0]}"
-    tag = _.util.sha1sum src
-
-    res.setHeader 'ETag', tag
-    req.connection.setTimeout 5000
-
-    if tag is req.headers['if-none-match']
-      res.statusCode = 304
-      return res.end()
-
-    exec "find '#{src}' -type f | grep -v '/\\.' | head -1", (err, stdout) ->
-      src = _.str.trim stdout
-      dst = path.resolve 'tmp', 'thumb', "#{_.util.sha1sum src}.jpg"
+    exec "find '#{src}' -type f -print0 | xargs -0 stat --format '%Y %n' | grep -v '/\\.' | sort -k 1 | tail -1", (err, stdout) ->
+      tag = _.util.sha1sum src
+      res.setHeader 'ETag', tag
+      req.connection.setTimeout 5000
+      if tag is req.headers['if-none-match']
+        res.statusCode = 304
+        return res.end()
+      src = (_.str.trim stdout).replace /^[0-9]+ /, ''
+      dst = path.resolve 'tmp', 'thumb', "#{tag}.jpg"
       img = { mime: 'application/octet-stream', data: new Buffer 0 }
       mim = mime.lookup src
       tmp = ''
