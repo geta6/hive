@@ -2,6 +2,7 @@
 
 fs = require 'fs'
 path = require 'path'
+util = require 'util'
 mime = require 'mime'
 meta = require 'musicmetadata'
 async = require 'async'
@@ -19,9 +20,11 @@ express = require 'express'
 ( ->
   process.env.ROOTDIR = '/media/var'
   process.env.CYPHERS = 'keyboardcat'
+
   global._ = require 'underscore'
   _.str = require 'underscore.string'
   _.date = require 'moment'
+
   _.util =
     gravatar: (mail, size = 80) ->
       hash = crypto.createHash('md5').update(_.str.trim mail.toLowerCase()).digest('hex')
@@ -32,26 +35,36 @@ express = require 'express'
       crypto.createHash('sha1').update(src).digest('hex')
     execsafe: (src) ->
       src.replace(/'/g, "'\\''")
-    reject: (srcs) ->
-      _.reject srcs, (src) ->
-        return yes if /^(\.DS.+|Network Trash Folder|Temporary Items|\.Apple.*)$/.test src
-        return yes if src.length is 0
-    datasize: (size, i = 0) ->
-      units = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB']
-      ++i while (size/=1024) >= 1024
-      return "#{size.toFixed(1)} #{units[i+1]}"
+
+  _.stat =
+    reject: (src) ->
+      return yes if /^(\.DS.+|Network Trash Folder|Temporary Items|\.Apple.*)$/.test src
+      return yes if src.length is 0
+    rejectList: (list) ->
+      return _.reject list, _.stat.reject
     status: (src) ->
       stat = fs.statSync src
-      if stat.isDirectory()
-        stat.size = (_.util.reject fs.readdirSync src).length
-        stat.mime = 'text/directory'
-      else
-        stat.mime = mime.lookup path.basename src
       path: src.replace /^\/media\/var/, ''
       name: path.basename src
-      mime: stat.mime
-      size: stat.size
+      mime: if stat.isDirectory() then 'text/directory' else mime.lookup src
+      size: if stat.isDirectory() then (_.stat.rejectList fs.readdirSync src).length else stat.size
       time: stat.mtime
+    statusList: (list) ->
+      if _.isArray list
+        return _.map (_.stat.rejectList list), _.stat.status
+      else
+        return (_.map (_.stat.rejectList [list]), _.stat.status)[0]
+    lists: (src, recursive = no) ->
+      stat = fs.statSync src
+      return src unless stat.isDirectory()
+      data = []
+      for file in _.stat.rejectList fs.readdirSync src
+        data.push next = path.join src, file
+        if fs.statSync(next).isDirectory() and recursive
+          data = data.concat arguments.callee next, recursive
+      return data
+    stats: (src, recursive = no) ->
+      return _.stat.statusList _.stat.lists src, recursive
 )()
 
 # Application
@@ -59,42 +72,16 @@ express = require 'express'
 app = ( ->
   app = express()
 
-  app.sessionStore = new ((require 'connect-redis') express)
-    db: 1
-    prefix: 'session'
+  mongoose.connect 'mongodb://localhost/media'
+
+  app.sessionStore = new ((require 'connect-mongo') express)
+    mongoose_connection: mongoose.connections[0]
 
   app.disable 'x-powered-by'
   app.set 'port', process.env.PORT
   app.set 'views', path.resolve 'views'
   app.set 'view engine', 'jade'
-  app.use (req, res, next) ->
-    req._startTime = new Date
-    end = res.end
-    res.end = (chunk, encoding) ->
-      res.end = end
-      res.end chunk, encoding
-      req._endTime = new Date
-      if 500 <= @statusCode
-        message = '\x1b[31m'
-      else if 400 <= @statusCode
-        message = '\x1b[33m'
-      else if 300 <= @statusCode
-        message = '\x1b[36m'
-      else if 200 <= @statusCode
-        message = '\x1b[32m'
-      message+= "#{@statusCode}\x1b[0m "
-      message+= "\x1b[35m#{req.method.toUpperCase()} "
-      message+= "\x1b[37m#{decodeURI req.url} "
-      message+= "\x1b[90m("
-      if req.route?.path
-        message+= "#{req.route.path}"
-      else if 399 > @statusCode
-        message+= "Static"
-      else
-        message+= "\x1b[31mUnknown\x1b[90m"
-      message+= " - #{req._endTime - req._startTime}ms)\x1b[0m"
-      process.nextTick -> console.log message
-    return next()
+  app.use express.logger format: 'dev'
   app.use express.compress()
   app.use express.static path.resolve 'public'
   app.use express.bodyParser()
@@ -180,7 +167,6 @@ app = ( ->
 # Database
 
 {User} = ( ->
-  mongoose.connect 'mongodb://localhost/media'
   UserSchema = new mongoose.Schema
     name: { type: String, unique: yes, index: yes }
     mail: { type: String }
@@ -234,30 +220,31 @@ app = ( ->
 
 ( ->
   app.all '/session', (req, res, next) ->
-    if req.isAuthenticated()
-      req.logout()
-      res.statusCode = 204
-      return res.end 'ok'
-    return (passport.authenticate 'local', (err, user, info) ->
-      if err
-        res.statusCode = 401
-        return res.end 'ng'
-      unless user
-        res.statusCode = 401
-        return res.end 'ng'
-      req.logIn user, (err) ->
-        if err
-          res.statusCode = 500
-          return res.end 'ng'
-        res.statusCode = 201
-        return res.end 'ok'
-    )(req, res, next)
+    res.setHeader 'Cache-Control', 'no-cache, no-store, must-revalidate'
+    switch req.method
+      when 'POST'
+        if req.isAuthenticated()
+          User.findByName req.body.name, (err, user) ->
+            user.mail = mail
+            user.save -> res.json 200, user
+        else
+          return (passport.authenticate 'local') req, res, ->
+            if req.isAuthenticated()
+              return res.json 201, req.user
+            return res.json 401, {}
+      when 'DELETE'
+        req.logout()
+        return res.json 204, {}
+      else
+        if req.isAuthenticated()
+          return res.json 200, req.user
+        return res.json 401, {}
 
-  app.get '/', (req, res) ->
-    return switch req.query.view
-      when 'stream'
-        res.render 'index'
-      else res.render 'index'
+  # app.get '/', (req, res) ->
+  #   return switch req.query.view
+  #     when 'stream'
+  #       res.render 'index'
+  #     else res.render 'index'
 
   app.get /^(.*)\.thumbnail$/, (req, res) ->
     src = "/media/var#{_.util.execsafe req.params[0]}"
@@ -333,12 +320,19 @@ app = ( ->
         res.statusCode = 200
         return res.end img.data
 
+  app.get '/500', (req, res) ->
+    res.statusCode = 500
+    return res.render 'error'
+
   app.get /.*/, (req, res) ->
-    if req.isAuthenticated()
-      src = "/media/var#{decodeURI req.url}"
-      if (fs.existsSync src) and (fs.statSync src).isFile()
-        return res.stream src
-    return res.redirect "/##{req.url}"
+    unless req.isAuthenticated()
+      res.statusCode = 401
+      return res.render 'error'
+    src = "/media/var#{decodeURI req._parsedUrl.pathname}"
+    if (fs.existsSync src) and (fs.statSync src).isFile()
+      return res.stream src
+    res.statusCode = 404
+    return res.render 'error'
 )()
 
 # Export
@@ -382,44 +376,45 @@ io = ( ->
   io.sockets.on 'connection', (socket) ->
     session = socket.handshake.user
 
-    socket.on 'sync', (conf = null) ->
-      console.log "sync from #{session?.name}"
-      return (socket.emit 'sync', null) unless session
-      User.findById session._id, (err, user) ->
-        user.conf = conf if conf
-        user.save -> socket.emit 'sync', user
+    if session
+      exc = /^(\.DS.+|Network Trash Folder|Temporary Items|\.Apple.*)$/
+      socket.on 'fetch', (query) ->
+        query.path = decodeURI query.path
+        src = path.join '/media', 'var', query.path
+        res = switch yes
+          when !fs.existsSync src then []
+          when query.term is 'stream'
+            _.reject (_.stat.stats src, yes), (stat) -> stat.mime is 'text/directory'
+          else _.stat.stats src
+        if _.isArray res
+          res = _.sortBy res, (stat) ->
+            return stat.time if /time/.test query.sort
+            return stat.name if /name/.test query.sort
+          res.reverse() if '-' is query.sort.substr 0, 1
+          if query.term is 'stream'
+            res = res.slice 0, 50
+        socket.emit 'start',
+          query: query
+          length: res.length
+        if _.isArray res
+          unless 0 < res.length
+            socket.emit 'error', new Error 'no result'
+            return socket.emit 'end'
+          for stat, index in res
+            do (stat, index) ->
+              setTimeout ->
+                socket.emit 'data', _.defaults stat, query
+                socket.emit 'end' if index + 1 is res.length
+              , 4 * index
+        else
+          socket.emit 'end', _.defaults res, query
 
-    socket.on 'fetch', (uri) ->
-      return null unless session
-      fix = if (1 < (_uri = uri.split '::').length) then _uri[1] else null
-      uri = if (1 < _uri.length) then _uri[0] else uri
-      dst = path.join '/media', 'var', decodeURI uri
-      console.log "fetch from #{session?.name}", dst, fix
-      unless fix
-        data = []
-        if (fs.existsSync dst)
-          if (fs.statSync dst).isDirectory()
-            data = _.util.reject fs.readdirSync dst
-            data = _.map data, (src) -> _.util.status path.join dst, src
-            data = _.sortBy data, (stat) -> stat.time
-          else
-            data = _.util.status dst
-        socket.emit 'fetch', data
-      if fix is 'stream'
-        exec "find '#{_.util.execsafe dst}' -type f -print0 | xargs -0 stat --format '%Y %n' | grep -v '/\\.' | sort -k 1 | tail -50", (err, stdout) ->
-          console.error err if err
-          data = _.util.reject _.map (_.str.trim(stdout).split '\n'), (src) -> src.replace /^[0-9]+ /, ''
-          data = _.map data, (src) ->
-            _.util.status src.replace /\/\//g, '/'
-          data = _.sortBy data, (stat) -> stat.time
-          socket.emit 'fetch', data
-      if /search/.test fix
-        val = fix.replace /^search\//, ''
-        exec "find '#{_.util.execsafe dst}' -iname '*#{_.util.execsafe val}*' -print0 | xargs -0 stat --format '%Y %n' | grep -v '/\\.' | sort -k 1", (err, stdout) ->
-          console.error err if err
-          data = _.util.reject _.map (_.str.trim(stdout).split '\n'), (src) -> src.replace /^[0-9]+ /, ''
-          data = _.map data, (src) ->
-            _.util.status src.replace /\/\//g, '/'
-          data = _.sortBy data, (stat) -> stat.time
-          socket.emit 'fetch', data
+      socket.on 'sync', (conf = no) ->
+        console.log "sync from #{session.name}"
+        User.findById session._id, (err, user) ->
+          if user and conf
+            user.conf = conf
+            return user.save (err, user) ->
+              socket.emit 'sync', err, user
+          socket.emit 'sync', err, user
 )()

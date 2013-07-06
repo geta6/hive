@@ -1,0 +1,108 @@
+!!! 5
+html
+  head
+    meta(name='viewport', content='width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no')
+    link(rel='stylesheet', href='//fonts.googleapis.com/css?family=Open+Sans+Condensed:300,700|Open+Sans:300,400,700')
+    link(rel='stylesheet', href='//api.geta6.net/font?family=glyphicons')
+    link(rel='stylesheet', href='/css/geta6.css')
+    link(rel='stylesheet', href='/css/icons.css')
+    title Geta &#65381;
+    //if lt IE 8
+      script(src='/js/html5.js')
+
+  body
+    #notify
+    #header
+
+    aside
+    header
+      #searchbox: input(placeholder='Search')
+      ul.nav.page
+        li: a#browse(href='javascript:void(0)'): i.icon.show_thumbnails_with_lines
+        li: a#stream(href='javascript:void(0)'): i.icon.flash
+        //- li: a#hearts(href='javascript:void(0)'): i.icon.heart
+      ul.nav.site
+        li#sortby
+          a(href='javascript:void(0)')
+            i.js_sort.icon.clock
+            i.js_order.icon.down_arrow
+          ul.open
+            li: a#sorby_time_asc.sortby(href='javascript:void(0)')
+              i.icon.clock
+              i.icon.up_arrow
+            li: a#sorby_time_dsc.sortby(href='javascript:void(0)')
+              i.icon.clock
+              i.icon.down_arrow
+            li: a#sorby_name_asc.sortby(href='javascript:void(0)')
+              i.icon.font
+              i.icon.up_arrow
+            li: a#sorby_name_dsc.sortby(href='javascript:void(0)')
+              i.icon.font
+              i.icon.down_arrow
+        li#signed
+          a(href='javascript:void(0)'): i.icon.user
+          ul.open
+            li: a#signout(href='javascript:void(0)'): i.icon.power
+        li#search: a(href='javascript:void(0)'): i.icon.search
+      ul.nav.load
+
+    nav
+    article
+
+    script#tp_void(type='text/template')
+      div#error
+        h1 x x
+          h2 ⌒
+        p No content found.
+    script#tp_list(type='text/template')
+      a.list(href!='#<%= path %>', x-name!='<%= name %>', x-time!='<%= new Date(time).getTime() %>')
+        .view
+          <% if (mime == 'text/directory') { %>
+          i.icon.folder_open
+          <% } else if (/video/.test(mime)) { %>
+          i.icon.facetime_video
+          <% } else if (/audio/.test(mime)) { %>
+          i.icon.music
+          <% } else if (/image/.test(mime)) {%>
+          i.icon.picture
+          <% } else if (/pdf/.test(mime)) { %>
+          i.icon.book_open
+          <% } else if (/text/.test(mime)) { %>
+          i.icon.notes
+          <% } else { %>
+          i.icon.file
+          <% } %>
+          img.lazy(src='', data-original!='<%= path %>.thumbnail', width='80px', height='80px')
+        .name <%= name %>
+        <% if (mime == 'text/directory') { %>
+        .info
+          span.size <%= size %> items
+          span.time <%= moment(time).fromNow() %>
+        <% } else { %>
+        .info
+          span.size <%= _.util.unitconv(size) %>
+          span.time <%= moment(time).fromNow() %>
+        <% } %>
+    script#tp_file(type='text/template')
+      .preview
+        #error
+          h1 under construction
+        video(src!="<%= path %>", controls)
+        audio(src!="<%= path %>", controls)
+        div <%= mime %>
+        a(href!="<%= path %>") preview
+    script#tp_auth(type='text/template')
+      form#auth(method='POST', action='/session')
+        input#username(type='username', name='username', placeholder='username')
+        input#password(type='password', name='password', placeholder='password')
+        input(type='submit')
+
+    script#tp_notify(type='text/template')
+      .notify: .text(class!='<%= type %>') <%= text %>
+
+    script(src='/lib/jquery.min.js')
+    script(src='/lib/jquery.lazyload.min.js ')
+    script(src='/lib/underscore-min.js')
+    script(src='/lib/moment.min.js')
+    script(src='/socket.io/socket.io.js')
+    script(src='/js/geta6.js')

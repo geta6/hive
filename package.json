@@ -1,9 +1,9 @@
 {
   "name": "geta6.net",
-  "version": "3.1.0",
+  "version": "3.2.0",
   "dependencies": {
     "async": "*",
-    "connect-redis": "*",
+    "connect-mongo": "*",
     "express": "*",
     "jade": "*",
     "mime": "*",
