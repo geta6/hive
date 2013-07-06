@@ -408,12 +408,6 @@ io = ( ->
               setTimeout ->
                 if socket.current is src
                   socket.emit 'data', _.defaults stat, query
-                  socket.emit 'data', _.defaults stat, query
-                  socket.emit 'data', _.defaults stat, query
-                  socket.emit 'data', _.defaults stat, query
-                  socket.emit 'data', _.defaults stat, query
-                  socket.emit 'data', _.defaults stat, query
-                  socket.emit 'data', _.defaults stat, query
                   socket.emit 'end' if index + 1 is res.length
               , 3 * index
         else
