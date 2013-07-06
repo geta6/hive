@@ -383,6 +383,7 @@ io = ( ->
       socket.on 'fetch', (query) ->
         query.path = decodeURI query.path
         src = path.join '/media', 'var', query.path
+        socket.current = src
         res = switch yes
           when !fs.existsSync src then []
           when query.term is 'stream'
@@ -403,10 +404,11 @@ io = ( ->
             socket.emit 'error', new Error 'no result'
             return socket.emit 'end'
           for stat, index in res
-            do (stat, index) ->
+            do (stat, index, src) ->
               setTimeout ->
-                socket.emit 'data', _.defaults stat, query
-                socket.emit 'end' if index + 1 is res.length
+                if socket.current is src
+                  socket.emit 'data', _.defaults stat, query
+                  socket.emit 'end' if index + 1 is res.length
               , 4 * index
         else
           socket.emit 'end', _.defaults res, query
