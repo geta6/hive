@@ -364,8 +364,10 @@ io = ( ->
     (express.cookieParser process.env.CYPHERS) data, {}, (err) ->
       return accept err, no if err
       return app.sessionStore.load data.signedCookies['connect.sid'], (err, session) ->
+        console.error err if err
         return accept err, no if err
-        data.user = session.passport.user
+        if session
+          data.user = session.passport.user
         return accept null, yes
   return io
 )()
