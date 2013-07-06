@@ -70,18 +70,19 @@ class Geta6
       (@$ '.navi, .site').fadeIn @time
 
       @socket.on 'sync', (err, @user) =>
-        console.log @user
+        console.log @socket.off
         ($ window).trigger 'synchronized'
 
       @socket.on 'start', (data) =>
-        @socket.current = @locate().path
+        @socket.current = window.location.hash
         (@$ '#header li').removeClass 'selected'
         (@$ '#stream').addClass 'selected' if /stream/.test data.query.term
         @navigate data
 
       @socket.on 'data', (stat) =>
-        if @socket.current is @locate().path
+        if @socket.current is window.location.hash
           (@$ '#leader').append @render 'leader', stat
+
 
       @socket.on 'end', (data) =>
         @loader no, =>
