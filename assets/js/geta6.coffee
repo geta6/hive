@@ -74,12 +74,14 @@ class Geta6
         ($ window).trigger 'synchronized'
 
       @socket.on 'start', (data) =>
+        @socket.current = @locate().path
         (@$ '#header li').removeClass 'selected'
         (@$ '#stream').addClass 'selected' if /stream/.test data.query.term
         @navigate data
 
       @socket.on 'data', (stat) =>
-        (@$ '#leader').append @render 'leader', stat
+        if @socket.current is @locate().path
+          (@$ '#leader').append @render 'leader', stat
 
       @socket.on 'end', (data) =>
         @loader no, =>
