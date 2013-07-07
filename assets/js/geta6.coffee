@@ -1,7 +1,7 @@
 $ -> geta6 = new Geta6()
 
 _.unitconv = (size, mime, i = 0) ->
-  # return "#{size} items" if mime is 'text/directory'
+  return "#{size} items" if mime is 'text/directory'
   units = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
   ++i while (size/=1024) >= 1024
   return "#{size.toFixed(2)} #{units[i+1]}"
