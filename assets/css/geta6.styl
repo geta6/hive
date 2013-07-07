@@ -279,8 +279,8 @@ input, button
   overflow auto
   color white
   .viewer
+    margin-bottom $upperpads
     text-align center
-    height 1000px
     .view
       padding ($lowergrid/2)
       a
@@ -317,9 +317,10 @@ input, button
         background $bordercolor
 
   audio, video
-    // margin-top 20000px
-    // display none !important
-    appearance none
+    width 100%
+
+  audio[src=''], video[src='']
+    display none
 
 
 #errors

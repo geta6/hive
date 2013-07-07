@@ -162,15 +162,20 @@ class Geta6
 
       (@$ '#handle_show').on 'click', => @player yes
       (@$ '#player').on 'click', (event) =>
-        @player no unless ($ event.target).parents('form').size()
+        return null if ($ event.target).parents('form').size()
+        return null if ($ event.target)[0].tagName is 'AUDIO'
+        return null if ($ event.target)[0].tagName is 'VIDEO'
+        @player no
 
       # Media
 
       ($ document).on 'click', '.handle_play', =>
         if ($ '.handle_play').find('i').hasClass 'play'
-          (@$ '#audio, #video').get(0).play()
+          (@$ '#audio').get(0).play()
+          (@$ '#video').get(0).play()
         else
-          (@$ '#audio, #video').get(0).pause()
+          (@$ '#audio').get(0).pause()
+          (@$ '#video').get(0).pause()
 
       ($ document).on 'click', '.handle_back', =>
         @socket.emit 'skip', _.extend @lastdata, dest: 'prev'
