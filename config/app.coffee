@@ -74,7 +74,7 @@ app = ( ->
   app.use (require 'connect-thumbnail')
     path: '/media/var'
     cache: path.resolve 'tmp', 'thumb'
-  app.use express.logger format: 'dev'
+  app.use (require 'connect-logger') format: '%status %method %url (%route - %time)'
   app.use express.bodyParser()
   app.use express.methodOverride()
   app.use express.cookieParser()
