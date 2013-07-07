@@ -168,10 +168,6 @@ app = ( ->
           return res.json 200, req.user
         return res.json 401, {}
 
-  app.get '/500', (req, res) ->
-    res.statusCode = 500
-    return res.render 'error'
-
   app.get /.*/, (req, res) ->
     unless req.isAuthenticated()
       res.statusCode = 401
@@ -227,7 +223,6 @@ io = ( ->
     session = socket.handshake.user
 
     if session
-      exc = /^(\.DS.+|Network Trash Folder|Temporary Items|\.Apple.*)$/
       socket.on 'fetch', (query) ->
         query.path = decodeURI query.path
         src = socket.current = path.join '/media', 'var', query.path
