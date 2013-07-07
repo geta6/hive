@@ -184,12 +184,14 @@ class Geta6
         @socket.emit 'skip', _.extend @lastdata, dest: 'next'
 
       (@$ '#audio, #video').on 'play', (event) =>
-        @notify "<i class='icon play'></i> #{_.last ($ event.target).attr('src').split '/'}"
-        ($ '.handle_play').find('i').removeClass('play').addClass('pause')
+        if 0 < ($ event.target).attr('src').length
+          @notify "<i class='icon play'></i> #{_.last ($ event.target).attr('src').split '/'}"
+          ($ '.handle_play').find('i').removeClass('play').addClass('pause')
 
       (@$ '#audio, #video').on 'pause', =>
-        @notify "<i class='icon pause'></i> #{_.last ($ event.target).attr('src').split '/'}"
-        ($ '.handle_play').find('i').removeClass('pause').addClass('play')
+        if 0 < ($ event.target).attr('src').length
+          @notify "<i class='icon pause'></i> #{_.last ($ event.target).attr('src').split '/'}"
+          ($ '.handle_play').find('i').removeClass('pause').addClass('play')
 
       (@$ '#audio, #video').on 'ended', =>
         @socket.emit 'skip', _.extend @lastdata, dest: 'next'
