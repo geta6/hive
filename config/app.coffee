@@ -224,6 +224,31 @@ io = ( ->
               socket.emit 'sync', err, user
           socket.emit 'sync', err, user
 
+      socket.on 'skip', (query) ->
+        query.dest or= 'next'
+        src = (path.join '/media', 'var', query.path).split '/'
+        src.pop()
+        if fs.existsSync src = src.join('/')
+          index = 0
+          for stat, i in stats = _.stat.map src
+            if (String stat.name) is (String query.name)
+              if query.dest is 'next'
+                index = i + 1
+              else
+                index = i - 1
+              break
+          index = stats.length - 1 if 0 > index
+          index = 0 if typeof stats[index] is 'undefined'
+          return socket.emit 'skip', stats[index]
+        return socket.emit 'skip', {}
+
+      socket.on 'next', (src) ->
+        try
+          src = decodeURI src
+        catch e
+          src = decodeURI src.replace /%/g, '%25'
+        finally
+
       socket.on 'fetch', (query) ->
         try
           query.path = decodeURI query.path

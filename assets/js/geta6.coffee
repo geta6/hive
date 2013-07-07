@@ -67,14 +67,12 @@ class Geta6
             @initialize()
 
     ($ document).on 'submit', (event) =>
+      event.preventDefault()
       if ($ event.target).hasClass 'negotiation'
-        event.preventDefault()
         return @negotiate event
       if ($ event.target).hasClass 'playstation'
-        event.preventDefault()
         return @playstate event
       if ($ event.target).hasClass 'datafind'
-        event.preventDefault()
         return @datafind event
 
   initialize: ->
@@ -103,6 +101,11 @@ class Geta6
           return @lazyload() unless data # directory
           (@$ '#leader').append @render 'browse', data
           @lastdata = data
+
+      @socket.on 'skip', (data) =>
+        @lastdata = data
+        @playstate null, data
+
       @socket.on 'error', (err) =>
         (@$ '#leader').append @render 'errors'
 
@@ -169,6 +172,12 @@ class Geta6
         else
           (@$ '#audio, #video').get(0).pause()
 
+      ($ document).on 'click', '.handle_back', =>
+        @socket.emit 'skip', _.extend @lastdata, dest: 'prev'
+
+      ($ document).on 'click', '.handle_next', =>
+        @socket.emit 'skip', _.extend @lastdata, dest: 'next'
+
       (@$ '#audio, #video').on 'play', (event) =>
         @notify "<i class='icon play'></i> #{_.last ($ event.target).attr('src').split '/'}"
         ($ '.handle_play').find('i').removeClass('play').addClass('pause')
@@ -176,6 +185,9 @@ class Geta6
       (@$ '#audio, #video').on 'pause', =>
         @notify "<i class='icon pause'></i> #{_.last ($ event.target).attr('src').split '/'}"
         ($ '.handle_play').find('i').removeClass('pause').addClass('play')
+
+      (@$ '#audio, #video').on 'ended', =>
+        @socket.emit 'skip', _.extend @lastdata, dest: 'next'
 
       # Location
 
@@ -256,9 +268,14 @@ class Geta6
           @notify 'sign in failure', 'failure'
         success: (@user) => window.location.reload()
 
-  playstate: (event) ->
-    type = ($ event.target).attr 'method'
-    src = ($ event.target).attr 'action'
+  playstate: (event, data) ->
+    if event
+      type = ($ event.target).attr 'method'
+      src = ($ event.target).attr 'action'
+    else
+      type = 'audio' if /audio/.test data.mime
+      type = 'video' if /video/.test data.mime
+      src = data.path
     if type is 'audio'
       (@$ '#video').attr 'src', ''
       if src isnt (@$ '#audio').attr 'src'

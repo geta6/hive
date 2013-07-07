@@ -46,9 +46,9 @@ html
     #leader
     #floats
     #handle
-      //- button.handle_back: i.icon.fast_backward
+      button.handle_back: i.icon.fast_backward
       button.handle_play: i.icon.play
-      //- button.handle_next: i.icon.fast_forward
+      button.handle_next: i.icon.fast_forward
       #handle_show
     #player
       .viewer
@@ -86,9 +86,9 @@ html
         span ・
         span {{ _.unitconv(size, mime) }}
       .ctrl
-        //- form: button.handle_back: i.icon.fast_backward
+        form: button.handle_back: i.icon.fast_backward
         form: button.handle_play: i.icon.play
-        //- form: button.handle_next: i.icon.fast_forward
+        form: button.handle_next: i.icon.fast_forward
 
     script#tp_browse(type='text/template')
       .browse
