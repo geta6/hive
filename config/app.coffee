@@ -4,11 +4,13 @@ fs = require 'fs'
 path = require 'path'
 util = require 'util'
 mime = require 'mime'
-meta = require 'musicmetadata'
 async = require 'async'
 crypto = require 'crypto'
 cluster = require 'cluster'
-{exec, spawn} = require 'child_process'
+{exec} = require 'child_process'
+
+_ = require 'underscore'
+_.str = require 'underscore.string'
 
 passport = require 'passport'
 strategy = (require 'passport-local').Strategy
@@ -17,20 +19,10 @@ express = require 'express'
 
 # Env
 
+process.env.ROOTDIR = '/media/var'
+process.env.CYPHERS = 'keyboardcat'
+
 ( ->
-  process.env.ROOTDIR = '/media/var'
-  process.env.CYPHERS = 'keyboardcat'
-
-  global._ = require 'underscore'
-  _.str = require 'underscore.string'
-  _.date = require 'moment'
-
-  _.util =
-    sha1sum: (src) ->
-      crypto.createHash('sha1').update(src).digest('hex')
-    execsafe: (src) ->
-      src.replace(/'/g, "'\\''")
-
   _.stat =
     map: (src, recursive = no) ->
       return _.stat.status src unless (fs.statSync src).isDirectory()
@@ -147,26 +139,27 @@ app = ( ->
 # Routing
 
 ( ->
-  app.all '/session', (req, res, next) ->
+  app.get '/session', (req, res, next) ->
     res.setHeader 'Cache-Control', 'no-cache, no-store, must-revalidate'
-    switch req.method
-      when 'POST'
+    if req.isAuthenticated()
+      return res.json 200, req.user
+    return res.json 401, {}
+
+  app.post '/session', (req, res, next) ->
+    res.setHeader 'Cache-Control', 'no-cache, no-store, must-revalidate'
+    if req.isAuthenticated()
+      User.findByName req.body.name, (err, user) ->
+        user.mail = mail
+        user.save -> res.json 200, user
+    else
+      return (passport.authenticate 'local') req, res, ->
         if req.isAuthenticated()
-          User.findByName req.body.name, (err, user) ->
-            user.mail = mail
-            user.save -> res.json 200, user
-        else
-          return (passport.authenticate 'local') req, res, ->
-            if req.isAuthenticated()
-              return res.json 201, req.user
-            return res.json 401, {}
-      when 'DELETE'
-        req.logout()
-        return res.json 204, {}
-      else
-        if req.isAuthenticated()
-          return res.json 200, req.user
+          return res.json 201, req.user
         return res.json 401, {}
+
+  app.delete '/session', (req, res, next) ->
+    req.logout()
+    return res.json 204, {}
 
   app.get /.*/, (req, res) ->
     unless req.isAuthenticated()
@@ -188,8 +181,7 @@ if cluster.isMaster
 
 http = ( ->
   http = (require 'http').createServer app
-  http.listen app.get 'port'
-  return http
+  return http.listen app.get 'port'
 )()
 
 io = ( ->
@@ -223,6 +215,14 @@ io = ( ->
     session = socket.handshake.user
 
     if session
+      socket.on 'sync', (conf = no) ->
+        User.findById session._id, (err, user) ->
+          if user and conf
+            user.conf = conf
+            return user.save (err, user) ->
+              socket.emit 'sync', err, user
+          socket.emit 'sync', err, user
+
       socket.on 'fetch', (query) ->
         query.path = decodeURI query.path
         src = socket.current = path.join '/media', 'var', query.path
@@ -253,12 +253,4 @@ io = ( ->
               , 3 * index
         else
           socket.emit 'end', _.defaults res, query
-
-      socket.on 'sync', (conf = no) ->
-        User.findById session._id, (err, user) ->
-          if user and conf
-            user.conf = conf
-            return user.save (err, user) ->
-              socket.emit 'sync', err, user
-          socket.emit 'sync', err, user
 )()

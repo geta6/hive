@@ -32,15 +32,20 @@ class Geta6
   socket: io.connect "http://#{window.location.host}"
   window.io = null
 
+  resurrect: ->
+  connected: no
   initialized: no
   imageloaded: no
 
   constructor: ->
     @socket.on 'disconnect', =>
       @notify 'socket disconnected', 'failure'
+      @connected = no
 
     @socket.on 'connect', =>
       @notify 'socket connected', 'success'
+      @connected = yes
+      @resurrect()
       unless @initialized
         $.ajax '/session',
           type: 'GET'
@@ -70,7 +75,6 @@ class Geta6
       (@$ '.navi, .site').fadeIn @time
 
       @socket.on 'sync', (err, @user) =>
-        console.log @socket.off
         ($ window).trigger 'synchronized'
 
       @socket.on 'start', (data) =>
@@ -82,7 +86,6 @@ class Geta6
       @socket.on 'data', (stat) =>
         if @socket.current is window.location.hash
           (@$ '#leader').append @render 'leader', stat
-
 
       @socket.on 'end', (data) =>
         @loader no, =>
@@ -156,7 +159,12 @@ class Geta6
           @viewmode @user.conf.view
           @viewsort @user.conf.sort
           @imageloaded = no
-          @socket.emit 'fetch', _.extend @locate(), @user.conf
+          if @connected
+            @socket.emit 'fetch', _.extend @locate(), @user.conf
+          else
+            @resurrect = =>
+              @resurrect = ->
+              @socket.emit 'fetch', _.extend @locate(), @user.conf
 
       ($ window).trigger('hashchange')
 
