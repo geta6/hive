@@ -34,7 +34,8 @@ process.env.CYPHERS = 'keyboardcat'
       return /^(\.DS.+|Network Trash Folder|Temporary Items|\.Apple.*)$/.test src
     status: (src) ->
       stat = fs.statSync src
-      path: src.replace /^\/media\/var/, ''
+      regex = new RegExp '^'+process.env.ROOTDIR.replace /\//g, '\\/'
+      path: src.replace regex, ''
       name: path.basename src
       mime: if stat.isDirectory() then 'text/directory' else mime.lookup src
       size: if stat.isDirectory() then (_.reject (fs.readdirSync src), (src) -> _.stat.reject src).length else stat.size
@@ -67,6 +68,9 @@ app = ( ->
   app.use (require 'connect-thumbnail')
     path: '/media/var'
     cache: path.resolve 'tmp', 'thumb'
+  app.use (require 'connect-pdfsplit')
+    cache: path.resolve 'tmp', 'pages'
+  app.use require 'connect-stream'
   app.use (require 'connect-logger') format: '%status %method %url (%route - %time)'
   app.use express.bodyParser()
   app.use express.methodOverride()
@@ -76,7 +80,6 @@ app = ( ->
     store: app.sessionStore
   app.use passport.initialize()
   app.use passport.session()
-  app.use require 'connect-stream'
   app.use app.router
   app.use (err, req, res, next) ->
     console.error "ERROR: #{err.message}"
@@ -149,14 +152,13 @@ app = ( ->
   app.post '/session', (req, res, next) ->
     res.setHeader 'Cache-Control', 'no-cache, no-store, must-revalidate'
     if req.isAuthenticated()
-      User.findByName req.body.name, (err, user) ->
+      return User.findByName req.body.name, (err, user) ->
         user.mail = mail
         user.save -> res.json 200, user
-    else
-      return (passport.authenticate 'local') req, res, ->
-        if req.isAuthenticated()
-          return res.json 201, req.user
-        return res.json 401, {}
+    return (passport.authenticate 'local') req, res, ->
+      if req.isAuthenticated()
+        return res.json 201, req.user
+      return res.json 401, {}
 
   app.delete '/session', (req, res, next) ->
     req.logout()
@@ -168,6 +170,8 @@ app = ( ->
       return res.render 'error'
     src = "/media/var#{decodeURI req._parsedUrl.pathname}"
     if (fs.existsSync src) and (fs.statSync src).isFile()
+      if req.query.page and /pdf/.test mime.lookup src
+        return res.pdfsplit src, req.query.page
       return res.stream src
     res.statusCode = 404
     return res.render 'error'
@@ -196,15 +200,13 @@ io = ( ->
   io.set 'browser client etag', yes
   io.set 'authorization', (data, accept) ->
     data.user = {}
-    unless data.headers?.cookie?
-      return accept null, yes
+    return accept null, yes unless data.headers?.cookie?
     (express.cookieParser process.env.CYPHERS) data, {}, (err) ->
       return accept err, no if err
       return app.sessionStore.load data.signedCookies['connect.sid'], (err, session) ->
         console.error err if err
         return accept err, no if err
-        if session
-          data.user = session.passport.user
+        data.user = session.passport.user if session
         return accept null, yes
   return io
 )()
@@ -232,10 +234,7 @@ io = ( ->
           index = 0
           for stat, i in stats = _.stat.map src
             if (String stat.name) is (String query.name)
-              if query.dest is 'next'
-                index = i + 1
-              else
-                index = i - 1
+              index = if query.dest is 'next' then i + 1 else i - 1
               break
           index = stats.length - 1 if 0 > index
           index = 0 if typeof stats[index] is 'undefined'

@@ -18,6 +18,7 @@ _.mimeicon = (mime) ->
 _.playable = (mime) ->
   return 'audio' if /audio/.test mime
   return 'video' if /video/.test mime
+  return 'pages' if /pdf/.test mime
   return no
 
 _.templateSettings.interpolate = /\{\{(.+?)\}\}/g
@@ -67,7 +68,8 @@ class Geta6
             @initialize()
 
     ($ document).on 'submit', (event) =>
-      event.preventDefault()
+      unless ($ event.target).hasClass 'passthrough'
+        event.preventDefault()
       if ($ event.target).hasClass 'negotiation'
         return @negotiate event
       if ($ event.target).hasClass 'playstation'
@@ -165,6 +167,8 @@ class Geta6
         return null if ($ event.target).parents('form').size()
         return null if ($ event.target)[0].tagName is 'AUDIO'
         return null if ($ event.target)[0].tagName is 'VIDEO'
+        return null if ($ event.target)[0].tagName is 'IMG'
+        return null if ($ event.target)[0].tagName is 'INPUT'
         @player no
 
       # Media
@@ -196,6 +200,21 @@ class Geta6
       (@$ '#audio, #video').on 'ended', =>
         @socket.emit 'skip', _.extend @lastdata, dest: 'next'
 
+      (@$ '#jumps').on 'keyup', (event) =>
+        if event.keyCode is 13
+          @pagejump (@$ '#jumps').val()
+
+      (@$ '#pages').on 'click', (event) =>
+        __target = ($ event.target)
+        x = event.pageX - __target.offset().left
+        w = __target.width()
+        src = __target.attr 'src'
+        page = src.replace(/^.*\?page=([0-9]*)$/, '$1')
+        page = 1 if src is page
+        page++ if w/2 < x
+        page-- if w/2 > x
+        @pagejump page
+
       # Location
 
       ($ window).on 'hashchange', =>
@@ -217,6 +236,12 @@ class Geta6
 
       ($ window).trigger('hashchange')
 
+  pagejump: (page = 1) ->
+    @notify "page #{page}"
+    src = (@$ '#pages').attr 'src'
+    (@$ '#pages').attr 'src', src.replace(/^(.*)\?page=[0-9]*$/, '$1') + "?page=#{page}"
+    (@$ '#jumps').val page
+
   datafind: (event) ->
     location = @locate()
     __search = (@$ '#datafind_field').val()
@@ -226,15 +251,15 @@ class Geta6
     else
       window.location.hash = location.path
       (@$ '#datafind').removeClass 'focus'
-    console.log __search, @locate()
 
   player: (show = yes, event = {}) ->
     if show
       (@$ '#player').fadeIn @time
-      (@$ '#handle').animate marginBottom: -1*(@$ '#handle').height(), @time
+      (@$ '#handle').animate marginBottom: -1*(@$ '#handle').height(), @time, =>
+        (@$ '#handle').hide()
     else
       (@$ '#player').fadeOut @time, =>
-        (@$ '#handle').animate marginBottom: 0, @time
+      (@$ '#handle').show().animate marginBottom: 0, @time
 
   sync: (done = ->) ->
     ($ window).on 'synchronized', =>
@@ -282,22 +307,30 @@ class Geta6
     else
       type = 'audio' if /audio/.test data.mime
       type = 'video' if /video/.test data.mime
+      type = 'pages' if /pdf/.test data.mime
       src = data.path
     if type is 'audio'
+      (@$ '#pages').hide().attr 'src', ''
       (@$ '#video').hide().attr 'src', ''
-      (@$ '#audio').show()
-      if src isnt (@$ '#audio').attr 'src'
-        @notify "loading #{_.last src.split '/'}"
-        (@$ '#audio').attr 'src', src
-      (@$ '#audio')[0].play()
+      (@$ '#jumps').hide()
+      __target = (@$ '#audio')
     if type is 'video'
+      (@$ '#pages').hide().attr 'src', ''
       (@$ '#audio').hide().attr 'src', ''
-      (@$ '#video').show()
-      if src isnt (@$ '#video').attr 'src'
-        @notify "loading #{_.last src.split '/'}"
-        (@$ '#video').attr 'src', src
-      (@$ '#video')[0].play()
-    (@$ '#player .viewer').html @render 'viewer', @lastdata
+      (@$ '#jumps').hide()
+      __target = (@$ '#video')
+    if type is 'pages'
+      (@$ '#audio').hide().attr 'src', ''
+      (@$ '#video').hide().attr 'src', ''
+      (@$ '#jumps').show().val(1)
+      __target = (@$ '#pages')
+
+    if src isnt __target.attr 'src'
+      __target.show().attr 'src', src
+      @notify "loading #{_.last src.split '/'}"
+      (@$ '#player .viewer').html @render 'viewer', @lastdata
+      __target[0].play() if __target[0].play
+
     (@$ '#handle_show').css(backgroundImage: "url('#{src}.thumbnail')")
     @player yes
 

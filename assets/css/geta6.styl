@@ -209,6 +209,8 @@ input, button
       img
         display block
         margin 0 auto
+        width auto
+        height 80px
     .info
       padding-bottom ($lowergrid/2)
       text-align center
@@ -291,6 +293,8 @@ input, button
       img
         display block
         margin 0 auto
+        width auto
+        height 80px
     .info
       padding-bottom ($lowergrid/2)
       text-align center
@@ -307,6 +311,7 @@ input, button
       form
         display inline-block
         margin-right ($lowergrid/2)
+        margin-bottom ($lowergrid/2)
         &:last-child
           margin-right 0
       button
@@ -317,12 +322,19 @@ input, button
         border 1px solid $bordercolor
         background $bordercolor
 
-  audio, video
+  audio, video, img
     width 100%
 
-  audio[src=''], video[src='']
+  audio[src=''], video[src=''], img[src='']
     display none
 
+  #jumps
+    display block
+    margin 0 auto ($lowergrid/2) auto
+    background $groundcolor
+    font-size 14px
+    font-weight bold
+    text-align center
 
 #errors
   padding 50px 25px

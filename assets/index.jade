@@ -56,6 +56,8 @@ html
       .player
         audio#audio(autoplay, controls)
         video#video(autoplay, controls)
+        input#jumps
+        img#pages()
 
     script#tp_visits(type='text/template')
       form.visits.negotiation(action='/session', method='POST')
@@ -106,7 +108,7 @@ html
           <% if (kind = _.playable(mime)) { %>
           form.playstation(action='{{ path }}', method='{{ kind }}'): button: i.icon.play
           <% } %>
-          form(action='{{ path }}'): button(type='submit'): i.icon.download
+          form(action='{{ path }}').passthrough: button(type='submit'): i.icon.download
           form(action='afp://geta6.net/media{{ path }}'): button(type='submit'): i.icon.imac
 
     script#tp_notify(type='text/template')
