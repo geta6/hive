@@ -255,7 +255,6 @@ io = ( ->
           socket.emit 'end', _.defaults res, query
 
       socket.on 'sync', (conf = no) ->
-        console.log "sync from #{session.name}"
         User.findById session._id, (err, user) ->
           if user and conf
             user.conf = conf
