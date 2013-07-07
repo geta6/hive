@@ -5,6 +5,7 @@
     "async": "*",
     "connect-logger": "*",
     "connect-mongo": "*",
+    "connect-pdfsplit": "*",
     "connect-stream": "*",
     "connect-thumbnail": "*",
     "express": "*",
