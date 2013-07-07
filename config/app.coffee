@@ -236,6 +236,7 @@ io = ( ->
           else if query.term is 'stream'
             res = _.reject (_.stat.map src, yes), (stat) -> stat.mime is 'text/directory'
           else if /^search\//.test query.term
+            tip = new RegExp (decodeURI query.term.replace /^search\//, ''), 'gi'
             res = _.reject (_.stat.map src, yes), (stat) ->
               return yes unless tip.test stat.name
           else
