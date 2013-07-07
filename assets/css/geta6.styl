@@ -60,7 +60,7 @@ input, button
 
 #loader
   location fixed 0 0 auto 0
-  z-index 120
+  z-index 130
   display none
   height 4px
   background-color $groundcolor
@@ -69,7 +69,7 @@ input, button
 
 #notify
   location fixed ($uppergrid + $upperpads) $upperpads auto auto
-  z-index 110
+  z-index 120
   text-align right
   .notify
     display none
@@ -124,6 +124,23 @@ input, button
     li
       border none
       border-top 1px solid $brightcolor
+  #datafind
+    input
+      display none
+    &.focus
+      location absolute 0 ($uppergrid * 2) 0 ($uppergrid * 2)
+      width auto
+      text-align left
+      border-right none
+      a
+        width $uppergrid
+        text-align center
+      #datafind_field
+        display inline-block
+        padding 0 $lowerpads
+        location absolute 0 0 0 $uppergrid
+        height $uppergrid - 1
+        background #FFF
 
 #guides
   margin-top 0
@@ -135,6 +152,7 @@ input, button
 
 #leader
   padding-bottom $uppergrid+$lowergrid
+
   .leader
     position relative
     transition all 0.12s ease-in
@@ -229,7 +247,7 @@ input, button
       &:first-child
         border-top 1px solid $bordercolor
 
-#player
+#handle
   location fixed auto 0 0 auto
   margin-bottom -1*$uppergrid
   height $uppergrid
@@ -241,18 +259,68 @@ input, button
     border-left 1px solid $bordercolor
     border-top 1px solid $bordercolor
     background $groundcolor
-  #player_wrap
+  #handle_show
     display inline-block
+    cursor pointer
     width $uppergrid
     height $uppergrid
     background-color $groundcolor
     background-size cover
     border-left 1px solid $bordercolor
     border-top 1px solid $bordercolor
+
+#player
+  display none
+  z-index 110
+  location fixed 0 0 0 0
+  margin-top -1px
+  padding ($uppergrid*2) $uppergrid $uppergrid $uppergrid
+  background rgba(0,0,0,.72)
+  overflow auto
+  color white
+  .viewer
+    text-align center
+    height 1000px
+    .view
+      padding ($lowergrid/2)
+      a
+        display inline-block
+        &:hover
+          box-shadow 0 0 10px rgba(60,180,60,.72)
+      img
+        display block
+        margin 0 auto
+    .info
+      padding-bottom ($lowergrid/2)
+      text-align center
+      font-weight bold
+      font-size 14px
+      .icon
+        width $lowergrid
+        text-align center
+    .stat
+      padding-bottom ($lowergrid/2)
+      text-align center
+    .ctrl
+      text-align center
+      form
+        display inline-block
+        margin-right ($lowergrid/2)
+        &:last-child
+          margin-right 0
+      button
+        padding 0 $lowerpads
+        min-width ($lowergrid*2)
+        font-size 13px
+        height $lowergrid
+        border 1px solid $bordercolor
+        background $bordercolor
+
   audio, video
-    margin-top 20000px
-    display none !important
+    // margin-top 20000px
+    // display none !important
     appearance none
+
 
 #errors
   padding 50px 25px

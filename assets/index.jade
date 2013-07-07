@@ -14,8 +14,11 @@ html
     #header
       ul.navi
         li#viewmode: a(href='javascript:void(0)'): i.icon.show_thumbnails_with_lines
-        li#stream: a(href='javascript:void(0)'): i.icon.flash
-        li: a(href='javascript:void(0)'): i.icon.search
+        li#latest50: a(href='javascript:void(0)'): i.icon.flash
+        li#datafind: form.datafind
+          a(href='javascript:void(0)'): i.icon.search
+          input#datafind_field(type='text', placeholder='Search text')
+          input(type='submit')
       ul.site
         li#viewsort.info
           a(href='javascript:void(0)')
@@ -41,13 +44,17 @@ html
               button(type='submit'): i.icon.power
     #guides: div
     #leader
+    #floats
+    #handle
+      //- button.handle_back: i.icon.fast_backward
+      button.handle_play: i.icon.play
+      //- button.handle_next: i.icon.fast_forward
+      #handle_show
     #player
-      //- button#player_back: i.icon.fast_backward
-      button#player_play: i.icon.play
-      //- button#player_next: i.icon.fast_forward
-      a#player_wrap
-        audio#main_audio(autoplay, controls)
-        video#main_video(autoplay, controls)
+      .viewer
+      .player
+        audio#audio(autoplay, controls)
+        video#video(autoplay, controls)
 
     script#tp_visits(type='text/template')
       form.visits.negotiation(action='/session', method='POST')
@@ -66,6 +73,22 @@ html
           span {{ moment(time).fromNow() }}
           span ・
           span {{ _.unitconv(size, mime) }}
+
+    script#tp_viewer(type='text/template')
+      .view
+        a(href='\#{{ path }}')
+          img(src='{{ path }}.thumbnail', width='80px', height='80px')
+      .info
+        span.icon: i.icon(class='{{ _.mimeicon(mime) }}')
+        span.name {{ name }}
+      .stat
+        span {{ moment(time).fromNow() }}
+        span ・
+        span {{ _.unitconv(size, mime) }}
+      .ctrl
+        //- form: button.handle_back: i.icon.fast_backward
+        form: button.handle_play: i.icon.play
+        //- form: button.handle_next: i.icon.fast_forward
 
     script#tp_browse(type='text/template')
       .browse
@@ -92,16 +115,15 @@ html
       #errors
         h1 x x
           h2 ⌒
-        p No content visible.
+        p <% if (typeof message == 'undefined') { %>No content visible.<% } else { %>{{ message }}<% } %>
 
     script(src='/lib/jquery.min.js')
-    //- //cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js
+    //- script(src='//cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js')
     script(src='/lib/underscore-min.js')
-    //- //cdnjs.cloudflare.com/ajax/libs/underscore.js/1.4.4/underscore-min.js
+    //- script(src='//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.4.4/underscore-min.js')
     script(src='/lib/moment.min.js')
-    //- //cdnjs.cloudflare.com/ajax/libs/moment.js/2.0.0/moment.min.js
+    //- script(src='//cdnjs.cloudflare.com/ajax/libs/moment.js/2.0.0/moment.min.js')
     script(src='/lib/jquery.lazyload.min.js ')
-    //- //cdnjs.cloudflare.com/ajax/libs/jquery.lazyload/1.8.4/jquery.lazyload.min.js
-    script(src='//api.html5media.info/1.1.5/html5media.min.js')
+    //- script(src='//cdnjs.cloudflare.com/ajax/libs/jquery.lazyload/1.8.4/jquery.lazyload.min.js')
     script(src='/socket.io/socket.io.js')
     script(src='/js/geta6.js')

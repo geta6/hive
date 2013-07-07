@@ -1,5 +1,4 @@
-$ ->
-  geta6 = new Geta6()
+$ -> geta6 = new Geta6()
 
 _.unitconv = (size, mime, i = 0) ->
   return "#{size} items" if mime is 'text/directory'
@@ -18,7 +17,7 @@ _.mimeicon = (mime) ->
 
 _.playable = (mime) ->
   return 'audio' if /audio/.test mime
-  # return 'video' if /video/.test mime
+  return 'video' if /video/.test mime
   return no
 
 _.templateSettings.interpolate = /\{\{(.+?)\}\}/g
@@ -30,8 +29,8 @@ class Geta6
 
   cache: {}
 
-  socket: io.connect "http://#{window.location.host}"
-  window.io = null
+  socket: null
+  lastdata: {}
 
   resurrect: ->
   connected: no
@@ -39,6 +38,12 @@ class Geta6
   imageloaded: no
 
   constructor: ->
+
+    if typeof io is 'undefined'
+      return (@$ '#leader').html @render 'errors', message: 'Server is down.'
+    else
+      @socket = io.connect "http://#{window.location.host}"
+      window.io = null
 
     @socket.on 'disconnect', =>
       @notify 'socket disconnected', 'failure'
@@ -52,7 +57,7 @@ class Geta6
         $.ajax '/session',
           type: 'GET'
           dataType: 'JSON'
-          error: =>
+          error: (xhr) =>
             (@$ '#leader').html @render 'visits'
           success: (@user) =>
             @user.conf or= {}
@@ -68,6 +73,9 @@ class Geta6
       if ($ event.target).hasClass 'playstation'
         event.preventDefault()
         return @playstate event
+      if ($ event.target).hasClass 'datafind'
+        event.preventDefault()
+        return @datafind event
 
   initialize: ->
     unless @initialized
@@ -82,7 +90,8 @@ class Geta6
       @socket.on 'start', (data) =>
         @socket.current = window.location.hash
         (@$ '#header li').removeClass 'selected'
-        (@$ '#stream').addClass 'selected' if /stream/.test data.query.term
+        (@$ '#latest50').addClass 'selected' if /stream/.test data.query.term
+        (@$ '#datafind').addClass 'selected' if /^search\//.test data.query.term
         @navigate data
 
       @socket.on 'data', (stat) =>
@@ -93,19 +102,33 @@ class Geta6
         @loader no, =>
           return @lazyload() unless data # directory
           (@$ '#leader').append @render 'browse', data
+          @lastdata = data
       @socket.on 'error', (err) =>
         (@$ '#leader').append @render 'errors'
 
-      (@$ '#stream').on 'click', =>
+      # View mode
+
+      (@$ '#viewmode').on 'click', =>
+        @user.conf.view = if @user.conf.view is 'thumb' then 'lines' else 'thumb'
+        @viewmode()
+
+      # Latest 50
+
+      (@$ '#latest50').on 'click', =>
         location = @locate()
         if location.term is 'stream'
           window.location.hash = "#{location.path.replace /::stream$/, ''}"
         else
           window.location.hash = "#{location.path}::stream"
 
-      (@$ '#viewmode').on 'click', =>
-        @user.conf.view = if @user.conf.view is 'thumb' then 'lines' else 'thumb'
-        @viewmode()
+      # Search
+
+      (@$ '#datafind a').on 'click', =>
+        (@$ '#datafind').toggleClass 'focus'
+        if 'block' is (@$ '#datafind input').css 'display'
+          (@$ '#datafind input').focus()
+
+      # Close Menu
 
       ($ document).on 'click', (event) =>
         if (__info = ($ event.target).parents('.info')).size()
@@ -114,7 +137,7 @@ class Geta6
             return __info.find('.open').slideDown @time
         ($ '.open').slideUp @time
 
-      # Sort
+      # View Sort
 
       (@$ '#viewsort_timedsc').on 'click', (event) =>
         @user.conf.sort = '-time'
@@ -132,29 +155,35 @@ class Geta6
         @user.conf.sort = '+name'
         @viewsort()
 
-      # Media element
+      # Element
 
-      (@$ '#player_wrap').on 'click', (event) =>
-        (@$ '#floats').fadeIn @time
+      (@$ '#handle_show').on 'click', => @player yes
+      (@$ '#player').on 'click', (event) =>
+        @player no unless ($ event.target).parents('form').size()
 
-      (@$ '#player_play').on 'click', =>
-        if (@$ '#player_play').find('i').hasClass 'play'
-          (@$ 'audio, video').get(0).play()
+      # Media
+
+      ($ document).on 'click', '.handle_play', =>
+        if ($ '.handle_play').find('i').hasClass 'play'
+          (@$ '#audio, #video').get(0).play()
         else
-          (@$ 'audio, video').get(0).pause()
+          (@$ '#audio, #video').get(0).pause()
 
-      (@$ 'audio, video').on 'play', (event) =>
+      (@$ '#audio, #video').on 'play', (event) =>
         @notify "<i class='icon play'></i> #{_.last ($ event.target).attr('src').split '/'}"
-        (@$ '#player_play').find('i').removeClass('play').addClass('pause')
+        ($ '.handle_play').find('i').removeClass('play').addClass('pause')
 
-      (@$ 'audio, video').on 'pause', =>
+      (@$ '#audio, #video').on 'pause', =>
         @notify "<i class='icon pause'></i> #{_.last ($ event.target).attr('src').split '/'}"
-        (@$ '#player_play').find('i').removeClass('pause').addClass('play')
+        ($ '.handle_play').find('i').removeClass('pause').addClass('play')
 
       # Location
 
       ($ window).on 'hashchange', =>
         @loader yes
+        if /^search\//.test term = @locate().term
+          (@$ '#datafind_field').val decodeURI (term.replace /^search\//, '')
+          (@$ '#datafind').addClass 'focus'
         (@$ '#leader').fadeOut @time, =>
           (@$ '#leader').html('').show()
           @viewmode @user.conf.view
@@ -168,6 +197,25 @@ class Geta6
               @socket.emit 'fetch', _.extend @locate(), @user.conf
 
       ($ window).trigger('hashchange')
+
+  datafind: (event) ->
+    location = @locate()
+    __search = (@$ '#datafind_field').val()
+    if 0 < __search.length
+      window.location.hash = "#{location.path}::search/#{encodeURI __search}"
+      (@$ '#datafind').addClass 'focus'
+    else
+      window.location.hash = location.path
+      (@$ '#datafind').removeClass 'focus'
+    console.log __search, @locate()
+
+  player: (show = yes, event = {}) ->
+    if show
+      (@$ '#player').fadeIn @time
+      (@$ '#handle').animate marginBottom: -1*(@$ '#handle').height(), @time
+    else
+      (@$ '#player').fadeOut @time, =>
+        (@$ '#handle').animate marginBottom: 0, @time
 
   sync: (done = ->) ->
     ($ window).on 'synchronized', =>
@@ -211,17 +259,21 @@ class Geta6
   playstate: (event) ->
     type = ($ event.target).attr 'method'
     src = ($ event.target).attr 'action'
-    @notify "loading #{_.last src.split '/'}"
     if type is 'audio'
-      (@$ 'video').attr 'src', ''
-      (@$ 'audio').attr 'src', src
+      (@$ '#video').attr 'src', ''
+      if src isnt (@$ '#audio').attr 'src'
+        @notify "loading #{_.last src.split '/'}"
+        (@$ '#audio').attr 'src', src
+      (@$ '#audio')[0].play()
     if type is 'video'
-      (@$ 'audio').attr 'src', ''
-      (@$ 'video').attr 'src', src
-    (@$ '#player_wrap')
-      .attr(href: "##{src}")
-      .css(backgroundImage: "url('#{src}.thumbnail')")
-    (@$ '#player').animate marginBottom: 0, @time
+      (@$ '#audio').attr 'src', ''
+      if src isnt (@$ '#video').attr 'src'
+        @notify "loading #{_.last src.split '/'}"
+        (@$ '#video').attr 'src', src
+      (@$ '#video')[0].play()
+    (@$ '#player .viewer').html @render 'viewer', @lastdata
+    (@$ '#handle_show').css(backgroundImage: "url('#{src}.thumbnail')")
+    @player yes
 
   $: (expr) ->
     @cache['dom'] or= {}
@@ -234,7 +286,7 @@ class Geta6
 
   locate: ->
     location =
-      path: encodeURI (window.location.hash.split '::')[0].substr 1
+      path: (window.location.hash.split '::')[0].substr 1
       term: (window.location.hash.split '::')[1]
     location.path = '/' if 0 is location.path.length
     return location
@@ -256,7 +308,7 @@ class Geta6
     (@$ '#notify').prepend $notify = @render 'notify', { type: type, text: text }
     return $notify.fadeIn @time, =>
       setTimeout =>
-        $notify.fadeOut @time, => #$notify.remove()
+        $notify.fadeOut @time, => $notify.remove()
       , 2000
 
   viewmode: (force = no) ->

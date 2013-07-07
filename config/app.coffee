@@ -225,34 +225,40 @@ io = ( ->
           socket.emit 'sync', err, user
 
       socket.on 'fetch', (query) ->
-        console.log url.parse query.path
-        query.path = decodeURIComponent query.path
-        src = socket.current = path.join '/media', 'var', query.path
-        if !fs.existsSync src
-          res = []
-        else if query.term is 'stream'
-          res = _.reject (_.stat.map src, yes), (stat) -> stat.mime is 'text/directory'
-        else
-          res = _.stat.map src, no
-        if _.isArray res
-          res = _.sortBy res, (stat) ->
-            return stat.time if /time/.test query.sort
-            return stat.name if /name/.test query.sort
-          res.reverse() if '-' is query.sort.substr 0, 1
-          if query.term is 'stream'
-            res = res.slice 0, 50
-        socket.emit 'start', { query: query, length: res.length }
-        if _.isArray res
-          unless 0 < res.length
-            socket.emit 'error', new Error 'no result'
-            return socket.emit 'end'
-          for stat, index in res
-            do (stat, index, src) ->
-              setTimeout ->
-                if socket.current is src
-                  socket.emit 'data', _.defaults stat, query
-                  socket.emit 'end' if index + 1 is res.length
-              , 3 * index
-        else
-          socket.emit 'end', _.defaults res, query
+        try
+          query.path = decodeURI query.path
+        catch e
+          query.path = decodeURI query.path.replace /%/g, '%25'
+        finally
+          src = socket.current = path.join '/media', 'var', query.path
+          if !fs.existsSync src
+            res = []
+          else if query.term is 'stream'
+            res = _.reject (_.stat.map src, yes), (stat) -> stat.mime is 'text/directory'
+          else if /^search\//.test query.term
+            res = _.reject (_.stat.map src, yes), (stat) ->
+              return yes unless tip.test stat.name
+          else
+            res = _.stat.map src, no
+          if _.isArray res
+            res = _.sortBy res, (stat) ->
+              return stat.time if /time/.test query.sort
+              return stat.name if /name/.test query.sort
+            res.reverse() if '-' is query.sort.substr 0, 1
+            if query.term is 'stream'
+              res = res.slice 0, 50
+          socket.emit 'start', { query: query, length: res.length }
+          if _.isArray res
+            unless 0 < res.length
+              socket.emit 'error', new Error 'no result'
+              return socket.emit 'end'
+            for stat, index in res
+              do (stat, index, src) ->
+                setTimeout ->
+                  if socket.current is src
+                    socket.emit 'data', _.defaults stat, query
+                    socket.emit 'end' if index + 1 is res.length
+                , 3 * index
+          else
+            socket.emit 'end', _.defaults res, query
 )()
