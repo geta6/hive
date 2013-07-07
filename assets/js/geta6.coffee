@@ -284,13 +284,15 @@ class Geta6
       type = 'video' if /video/.test data.mime
       src = data.path
     if type is 'audio'
-      (@$ '#video').attr 'src', ''
+      (@$ '#video').hide().attr 'src', ''
+      (@$ '#audio').show()
       if src isnt (@$ '#audio').attr 'src'
         @notify "loading #{_.last src.split '/'}"
         (@$ '#audio').attr 'src', src
       (@$ '#audio')[0].play()
     if type is 'video'
-      (@$ '#audio').attr 'src', ''
+      (@$ '#audio').hide().attr 'src', ''
+      (@$ '#video').show()
       if src isnt (@$ '#video').attr 'src'
         @notify "loading #{_.last src.split '/'}"
         (@$ '#video').attr 'src', src
