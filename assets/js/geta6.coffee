@@ -1,4 +1,5 @@
-$ -> geta6 = new Geta6()
+$ ->
+  geta6 = new Geta6()
 
 _.unitconv = (size, mime, i = 0) ->
   return "#{size} items" if mime is 'text/directory'
@@ -38,6 +39,7 @@ class Geta6
   imageloaded: no
 
   constructor: ->
+
     @socket.on 'disconnect', =>
       @notify 'socket disconnected', 'failure'
       @connected = no
@@ -91,7 +93,6 @@ class Geta6
         @loader no, =>
           return @lazyload() unless data # directory
           (@$ '#leader').append @render 'browse', data
-
       @socket.on 'error', (err) =>
         (@$ '#leader').append @render 'errors'
 
@@ -233,7 +234,7 @@ class Geta6
 
   locate: ->
     location =
-      path: (window.location.hash.split '::')[0].substr 1
+      path: encodeURI (window.location.hash.split '::')[0].substr 1
       term: (window.location.hash.split '::')[1]
     location.path = '/' if 0 is location.path.length
     return location

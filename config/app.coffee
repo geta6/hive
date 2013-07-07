@@ -1,6 +1,7 @@
 # Dependencies
 
 fs = require 'fs'
+url = require 'url'
 path = require 'path'
 util = require 'util'
 mime = require 'mime'
@@ -196,7 +197,7 @@ io = ( ->
   io.set 'authorization', (data, accept) ->
     data.user = {}
     unless data.headers?.cookie?
-      return accept null, no
+      return accept null, yes
     (express.cookieParser process.env.CYPHERS) data, {}, (err) ->
       return accept err, no if err
       return app.sessionStore.load data.signedCookies['connect.sid'], (err, session) ->
@@ -224,7 +225,8 @@ io = ( ->
           socket.emit 'sync', err, user
 
       socket.on 'fetch', (query) ->
-        query.path = decodeURI query.path
+        console.log url.parse query.path
+        query.path = decodeURIComponent query.path
         src = socket.current = path.join '/media', 'var', query.path
         if !fs.existsSync src
           res = []

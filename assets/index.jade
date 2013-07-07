@@ -67,12 +67,6 @@ html
           span ・
           span {{ _.unitconv(size, mime) }}
 
-    script#tp_errors(type='text/template')
-      #errors
-        h1 x x
-          h2 ⌒
-        p No content visible.
-
     script#tp_browse(type='text/template')
       .browse
         .view
@@ -94,9 +88,20 @@ html
     script#tp_notify(type='text/template')
       .notify: .text(class='{{ type }}') {{ text }}
 
+    script#tp_errors(type='text/template')
+      #errors
+        h1 x x
+          h2 ⌒
+        p No content visible.
+
     script(src='/lib/jquery.min.js')
-    script(src='/lib/jquery.lazyload.min.js ')
+    //- //cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js
     script(src='/lib/underscore-min.js')
+    //- //cdnjs.cloudflare.com/ajax/libs/underscore.js/1.4.4/underscore-min.js
     script(src='/lib/moment.min.js')
+    //- //cdnjs.cloudflare.com/ajax/libs/moment.js/2.0.0/moment.min.js
+    script(src='/lib/jquery.lazyload.min.js ')
+    //- //cdnjs.cloudflare.com/ajax/libs/jquery.lazyload/1.8.4/jquery.lazyload.min.js
+    script(src='//api.html5media.info/1.1.5/html5media.min.js')
     script(src='/socket.io/socket.io.js')
     script(src='/js/geta6.js')
