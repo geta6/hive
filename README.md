@@ -7,7 +7,27 @@
 * imagemagick
 * ffmpeg
 * pdftk
+* python draxoft.auth.pam
 * nodectl
+
+```
+pip install draxoft.auth.pam
+npm -g install nodectl
+```
+
+### debian
+
+```
+apt-get install imagemagick ffmpeg pdftk
+```
+
+### osx
+```
+brew install imagemagick ffmpeg
+```
+
+[pdftk](http://www.pdflabs.com/tools/pdftk-the-pdf-toolkit/) is only GUI installer.
+
 
 ## usage
 
@@ -32,3 +52,6 @@ edit `.nodectl.json`
 }
 ```
 
+## user authentication
+
+PAM auth
