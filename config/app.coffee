@@ -1,3 +1,10 @@
+
+# Env
+
+process.env.ROOTDIR = '/media/var'
+process.env.CYPHERS = 'keyboardcat'
+process.env.SITENAME = 'Hive'
+
 # Dependencies
 
 fs = require 'fs'
@@ -17,11 +24,6 @@ passport = require 'passport'
 strategy = (require 'passport-local').Strategy
 mongoose = require 'mongoose'
 express = require 'express'
-
-# Env
-
-process.env.ROOTDIR = '/media/var'
-process.env.CYPHERS = 'keyboardcat'
 
 ( ->
   _.stat =
@@ -66,7 +68,7 @@ app = ( ->
   app.set 'views', path.resolve 'views'
   app.set 'view engine', 'jade'
   app.use (require 'connect-thumbnail')
-    path: '/media/var'
+    path: process.env.ROOTDIR
     cache: path.resolve 'tmp', 'thumb'
   app.use (require 'connect-pdfsplit')
     cache: path.resolve 'tmp', 'pages'
@@ -168,7 +170,7 @@ app = ( ->
     unless req.isAuthenticated()
       res.statusCode = 401
       return res.render 'error'
-    src = "/media/var#{decodeURI req._parsedUrl.pathname}"
+    src = "#{process.env.ROOTDIR}#{decodeURI req._parsedUrl.pathname}"
     if (fs.existsSync src) and (fs.statSync src).isFile()
       if req.query.page and /pdf/.test mime.lookup src
         return res.pdfsplit src, req.query.page
@@ -217,6 +219,10 @@ io = ( ->
   io.sockets.on 'connection', (socket) ->
     session = socket.handshake.user
 
+    socket.on 'init', ->
+      socket.emit 'init',
+        sitename: process.env.SITENAME
+
     if session
       socket.on 'sync', (conf = no) ->
         User.findById session._id, (err, user) ->
@@ -228,7 +234,7 @@ io = ( ->
 
       socket.on 'skip', (query) ->
         query.dest or= 'next'
-        src = (path.join '/media', 'var', query.path).split '/'
+        src = (path.join process.env.ROOTDIR, query.path).split '/'
         src.pop()
         if fs.existsSync src = src.join('/')
           index = 0
@@ -254,7 +260,7 @@ io = ( ->
         catch e
           query.path = decodeURI query.path.replace /%/g, '%25'
         finally
-          src = socket.current = path.join '/media', 'var', query.path
+          src = socket.current = path.join process.env.ROOTDIR, query.path
           if !fs.existsSync src
             res = []
           else if query.term is 'stream'
