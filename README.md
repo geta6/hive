@@ -4,6 +4,7 @@
 
 ## requirement
 
+* nginx (>= 1.4.0 or TCP proxy patched)
 * imagemagick
 * ffmpeg
 * pdftk
@@ -38,6 +39,49 @@ mv config/nodectl.json.sample .nodectl.json
 nodectl
 ```
 
+## nginx setup
+
+hive not includes static supplier.
+
+```
+upstream nodejs {
+  server  127.0.0.1:3000;
+}
+
+server {
+  listen       80 default_server;
+  charset      UTF-8;
+  server_name  _;
+  root         /path/to/hive/public;
+  index        index.html;
+
+  location ~* ^(\/css|\/js|\/img|\/lib) {
+    access_log  off;
+    expires     max;
+  }
+
+  location ~* (\.html|\.txt|\.ico)$ {
+    access_log  off;
+    expires     max;
+  }
+
+  location ~* ^(\/.+)$ {
+    proxy_read_timeout     300;
+    proxy_connect_timeout  300;
+    proxy_set_header       Host               $host;
+    proxy_set_header       X-Real-IP          $remote_addr;
+    proxy_set_header       X-Forwarded-Host   $host;
+    proxy_set_header       X-Forwarded-Server $host;
+    proxy_set_header       X-Forwarded-For    $proxy_add_x_forwarded_for;
+    proxy_set_header       X-Document-Root    $document_root;
+    proxy_set_header       X-Document-URI     $document_uri;
+    proxy_set_header       Upgrade            $http_upgrade;
+    proxy_set_header       Connection         "Upgrade";
+    proxy_pass             http://nodejs;
+  }
+}
+```
+
 ## config
 
 edit `.nodectl.json`
@@ -54,4 +98,6 @@ edit `.nodectl.json`
 
 ## user authentication
 
-PAM auth
+PAM authentication.
+
+Use localuser username and password.
