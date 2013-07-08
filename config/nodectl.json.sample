@@ -1,0 +1,15 @@
+{
+  "port": 3000,
+  "env": "production",
+  "watch": false,
+  "assets": "assets",
+  "output": "public",
+  "minify": true,
+  "main": "config/app.coffee",
+  "exec": "config/ini.coffee",
+  "setenv": {
+    "ROOTDIR": "/media/var",
+    "SESSION_SECRET": "keyboard",
+    "SITENAME": "Hive"
+  }
+}

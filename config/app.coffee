@@ -1,10 +1,4 @@
 
-# Env
-
-process.env.ROOTDIR = '/media/var'
-process.env.CYPHERS = 'keyboardcat'
-process.env.SITENAME = 'Hive'
-
 # Dependencies
 
 fs = require 'fs'
@@ -58,7 +52,7 @@ express = require 'express'
 app = ( ->
   app = express()
 
-  mongoose.connect 'mongodb://localhost/media'
+  mongoose.connect process.env.MONGODB
 
   app.sessionStore = new ((require 'connect-mongo') express)
     mongoose_connection: mongoose.connections[0]
@@ -79,7 +73,7 @@ app = ( ->
   app.use express.methodOverride()
   app.use express.cookieParser()
   app.use express.session
-    secret: process.env.CYPHERS
+    secret: process.env.SESSION_SECRET
     store: app.sessionStore
   app.use passport.initialize()
   app.use passport.session()
@@ -204,7 +198,7 @@ io = ( ->
   io.set 'authorization', (data, accept) ->
     data.user = {}
     return accept null, yes unless data.headers?.cookie?
-    (express.cookieParser process.env.CYPHERS) data, {}, (err) ->
+    (express.cookieParser process.env.SESSION_SECRET) data, {}, (err) ->
       return accept err, no if err
       return app.sessionStore.load data.signedCookies['connect.sid'], (err, session) ->
         console.error err if err
