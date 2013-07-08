@@ -12,7 +12,6 @@
     "jade": "*",
     "mime": "*",
     "mkdirp": "*",
-    "mktemp": "*",
     "mongoose": "*",
     "nib": "*",
     "passport": "*",

@@ -72,6 +72,7 @@ app = ( ->
     cache: path.resolve 'tmp', 'thumb'
   app.use (require 'connect-pdfsplit')
     cache: path.resolve 'tmp', 'pages'
+    density: 144
   app.use require 'connect-stream'
   app.use (require 'connect-logger') format: '%status %method %url (%route - %time)'
   app.use express.bodyParser()
