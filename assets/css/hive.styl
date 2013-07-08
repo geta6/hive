@@ -1,0 +1,392 @@
+@import 'nib'
+
+global-reset()
+
+location(p=relative, t=auto, r=auto, b=auto, l=auto)
+  position p
+  top t
+  right r
+  bottom b
+  left l
+
+$uppergrid = 44px
+$lowergrid = 32px
+$upperpads = 10px
+$lowerpads = 5px
+$groundcolor = #EEE
+$brightcolor = #DDD
+$bordercolor = #CCC
+
+*
+  -webkit-text-size-adjust 100%
+  font-smoothing antialiased
+  box-sizing border-box
+  vertical-align top
+
+html, body
+  background $groundcolor
+  font-size 12px
+  font-family 'Open Sans', Sans-Serif
+  color #222
+
+// Elements
+
+a, button
+  color #777
+  text-decoration none
+  transition all 0.12s ease-in
+  cursor pointer
+  &:hover
+    color #4A5
+
+label
+  display block
+  margin-bottom $lowerpads
+  line-height $lowergrid
+  text-align center
+
+input, button
+  display inline-block
+  margin 0
+  padding 0
+  appearance none
+  font inherit
+  background transparent
+  border none
+  outline none
+  border-radius 0
+
+// IDs
+
+#loader
+  location fixed 0 0 auto 0
+  z-index 130
+  display none
+  height 4px
+  background-color $groundcolor
+  background-image url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAYAAAAECAYAAACtBE5DAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAyJpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuMC1jMDYwIDYxLjEzNDc3NywgMjAxMC8wMi8xMi0xNzozMjowMCAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvIiB4bWxuczp4bXBNTT0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL21tLyIgeG1sbnM6c3RSZWY9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9zVHlwZS9SZXNvdXJjZVJlZiMiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENTNSBNYWNpbnRvc2giIHhtcE1NOkluc3RhbmNlSUQ9InhtcC5paWQ6OENDRjNBN0E2NTZBMTFFMEI3QjRBODM4NzJDMjlGNDgiIHhtcE1NOkRvY3VtZW50SUQ9InhtcC5kaWQ6OENDRjNBN0I2NTZBMTFFMEI3QjRBODM4NzJDMjlGNDgiPiA8eG1wTU06RGVyaXZlZEZyb20gc3RSZWY6aW5zdGFuY2VJRD0ieG1wLmlpZDo4Q0NGM0E3ODY1NkExMUUwQjdCNEE4Mzg3MkMyOUY0OCIgc3RSZWY6ZG9jdW1lbnRJRD0ieG1wLmRpZDo4Q0NGM0E3OTY1NkExMUUwQjdCNEE4Mzg3MkMyOUY0OCIvPiA8L3JkZjpEZXNjcmlwdGlvbj4gPC9yZGY6UkRGPiA8L3g6eG1wbWV0YT4gPD94cGFja2V0IGVuZD0iciI/PqqezsUAAAAfSURBVHjaYmRABcYwBiM2QSA4y4hNEKYDQxAEAAIMAHNGAzhkPOlYAAAAAElFTkSuQmCC')
+  border-bottom 1px solid $bordercolor
+
+#notify
+  location fixed ($uppergrid + $upperpads) $upperpads auto auto
+  z-index 120
+  text-align right
+  .notify
+    display none
+  .text
+    display inline-block
+    margin-bottom $lowerpads
+    padding 3px 5px
+    font-weight bold
+    font-size 10px
+    color white
+    border-radius 3px
+    background rgba(20,20,20,.72)
+  .success
+    background rgba(20,180,20,.72)
+  .failure
+    background rgba(180,20,20,.72)
+
+#header
+  location fixed 0 0 auto 0
+  z-index 100
+  height $uppergrid
+  background $groundcolor
+  border-bottom 1px solid $bordercolor
+  .navi, .site
+    display none
+  .navi
+    float left
+    li
+      border-right 1px solid $brightcolor
+  .site
+    float right
+    li
+      border-left 1px solid $brightcolor
+  li
+    display inline-block
+    position relative
+    width $uppergrid
+    line-height $uppergrid
+    text-align center
+    &.selected *
+      color #A54
+  a, button
+    display inline-block
+    width 100%
+  .open
+    display none
+    location absolute ($uppergrid - 1) auto auto -1px
+    width $uppergrid + 1
+    border 1px solid $bordercolor
+    border-top none
+    background $groundcolor
+    li
+      border none
+      border-top 1px solid $brightcolor
+  #datafind
+    input
+      display none
+    &.focus
+      location absolute 0 ($uppergrid * 2) 0 ($uppergrid * 2)
+      width auto
+      text-align left
+      border-right none
+      a
+        width $uppergrid
+        text-align center
+      #datafind_field
+        display inline-block
+        padding 0 $lowerpads
+        location absolute 0 0 0 $uppergrid
+        height $uppergrid - 1
+        background #FFF
+
+#guides
+  margin-top 0
+  padding $upperpads
+  min-height $uppergrid
+  background $groundcolor
+  line-height ($uppergrid - $upperpads * 2 - 1)
+  border-bottom 1px solid $bordercolor
+
+#leader
+  padding-bottom $uppergrid+$lowergrid
+
+  .leader
+    position relative
+    transition all 0.12s ease-in
+    &:hover
+      background #FFF
+    .info
+      overflow ellipsis
+    .icon
+      text-align center
+      width $lowergrid
+      height (3/5) * $lowergrid
+      line-height (3/5) * $lowergrid
+    .name
+      overflow ellipsis
+      height (3/5) * $lowergrid
+      line-height (3/5) * $lowergrid
+      font-weight bold
+    .stat
+      overflow ellipsis
+      height (2/5) * $lowergrid
+      line-height (2/5) * $lowergrid
+      font-size 10px
+    &.lines
+      display block
+      height $lowergrid
+      border-bottom 1px solid $brightcolor
+      .icon
+        location absolute 0 auto 0 0
+        height $lowergrid
+        line-height $lowergrid
+      .name
+        display block
+        padding-left $lowergrid
+      .stat
+        display block
+        padding-left $lowergrid
+      .view
+        display none
+    &.thumb
+      display inline-block
+      padding 5px
+      height auto
+      text-align center
+      border-right 1px solid $bordercolor
+      border-bottom 1px solid $bordercolor
+      .icon
+        width 20px
+        text-align left
+
+  .browse
+    width 100%
+    .view
+      padding ($lowergrid/2)
+      img
+        display block
+        margin 0 auto
+        width auto
+        height 80px
+    .info
+      padding-bottom ($lowergrid/2)
+      text-align center
+      font-weight bold
+      font-size 14px
+      .icon
+        width $lowergrid
+        text-align center
+    .stat
+      padding-bottom ($lowergrid/2)
+      text-align center
+    .ctrl
+      text-align center
+      form
+        display inline-block
+        margin-right ($lowergrid/2)
+        &:last-child
+          margin-right 0
+      button
+        padding 0 $lowerpads
+        min-width ($lowergrid*2)
+        font-size 13px
+        height $lowergrid
+        border 1px solid $bordercolor
+
+  .visits
+    margin 0 auto
+    padding $upperpads
+    max-width 300px
+    input, button
+      padding 0 $lowerpads
+      width 100%
+      height $lowergrid
+      border 1px solid $bordercolor
+      border-top none
+      &:first-child
+        border-top 1px solid $bordercolor
+
+#handle
+  display none
+  location fixed auto 0 0 auto
+  margin-bottom -1*$uppergrid
+  height $uppergrid
+  button
+    padding 0 $lowerpads
+    width ($uppergrid)
+    height $uppergrid
+    font-size 13px
+    border-left 1px solid $bordercolor
+    border-top 1px solid $bordercolor
+    background $groundcolor
+  #handle_show
+    display inline-block
+    cursor pointer
+    width $uppergrid
+    height $uppergrid
+    background-color $groundcolor
+    background-size cover
+    border-left 1px solid $bordercolor
+    border-top 1px solid $bordercolor
+
+#player
+  display none
+  z-index 110
+  location fixed 0 0 0 0
+  margin-top -1px
+  padding ($uppergrid*2) $uppergrid $uppergrid $uppergrid
+  background rgba(0,0,0,.72)
+  overflow auto
+  color white
+  .viewer
+    margin-bottom $upperpads
+    text-align center
+    .view
+      padding ($lowergrid/2)
+      a
+        display inline-block
+        &:hover
+          box-shadow 0 0 10px rgba(60,180,60,.72)
+      img
+        display block
+        margin 0 auto
+        width auto
+        height 80px
+    .info
+      padding-bottom ($lowergrid/2)
+      text-align center
+      font-weight bold
+      font-size 14px
+      .icon
+        width $lowergrid
+        text-align center
+    .stat
+      padding-bottom ($lowergrid/2)
+      text-align center
+    .ctrl
+      text-align center
+      form
+        display inline-block
+        margin-right ($lowergrid/2)
+        margin-bottom ($lowergrid/2)
+        &:last-child
+          margin-right 0
+      button
+        padding 0 $lowerpads
+        min-width ($lowergrid*2)
+        font-size 13px
+        height $lowergrid
+        border 1px solid $bordercolor
+        background $bordercolor
+
+  audio, video, img
+    width 100%
+
+  audio[src=''], video[src=''], img[src='']
+    display none
+
+  #jumps
+    display block
+    margin 0 auto ($lowergrid/2) auto
+    background $groundcolor
+    font-size 14px
+    font-weight bold
+    text-align center
+
+#errors
+  padding 50px 25px
+  text-align center
+  font 14px 'Open Sans', Sans-Serif
+  color #222
+  background #EEE
+
+  a
+    color #4183c4
+    text-decoration none
+    &:hover
+      text-decoration underline
+
+  h1
+    margin 0px
+    font-weight 300
+    line-height 60px
+    font-size 60px
+    letter-spacing -1px
+    text-shadow 0 1px 0 #fff
+
+  h2
+    line-height 30px
+    font-size 30px
+    font-weight 300
+    text-shadow 0 1px 0 #fff
+
+  p
+    margin 25px 0 50px
+    line-height 25px
+
+@media only screen and (min-width: 1081px)
+  .leader.thumb
+    width (100/6)%
+    &:nth-child(6n)
+      border-right none !important
+
+@media only screen and (min-width:841px) and (max-width: 1080px)
+  .leader.thumb
+    width (100/5)%
+    &:nth-child(5n)
+      border-right none !important
+
+@media only screen and (min-width:601px) and (max-width: 840px)
+  .leader.thumb
+    width (100/4)%
+    &:nth-child(4n)
+      border-right none !important
+
+@media only screen and (max-width: 600px)
+  .leader.thumb
+    width (100/3)%
+    &:nth-child(3n)
+      border-right none !important
