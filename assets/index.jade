@@ -108,8 +108,8 @@ html
           <% if (kind = _.playable(mime)) { %>
           form.playstation(action='{{ path }}', method='{{ kind }}'): button: i.icon.play
           <% } %>
-          form(action='{{ path }}').passthrough: button(type='submit'): i.icon.download
-          form(action='afp://geta6.net/media{{ path }}'): button(type='submit'): i.icon.imac
+          form.passthrough(action='{{ path }}'): button(type='submit'): i.icon.download
+          form.passthrough(action='afp://geta6.net/media{{ path }}'): button(type='submit'): i.icon.imac
 
     script#tp_notify(type='text/template')
       .notify: .text(class='{{ type }}') {{ text }}
