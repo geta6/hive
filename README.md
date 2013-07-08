@@ -1,6 +1,6 @@
 # hive
 
-  first media broadcaster.
+  fast media broadcaster.
 
 ## requirement
 
