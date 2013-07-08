@@ -50,6 +50,7 @@ class Hive
 
     @socket.on 'init', (conf) =>
       @site = conf.sitename
+      @notify "hive version #{conf.version}"
 
     @socket.on 'disconnect', =>
       @notify 'socket disconnected', 'failure'
@@ -361,17 +362,19 @@ class Hive
     location.path = '/' if 0 is location.path.length
     return location
 
+  loaderPosition: 0
+  loaderInterval: null
   loader: (start = yes, callback = ->) ->
-    @loader.position or= 0
+    @loaderPposition or= 0
     if start
-      @loader.interval = setInterval ->
-        @loader.position = if ++@loader.position < 6 then @loader.position else 0
-        (@$ '#loader').css 'background-position': "#{@loader.position}px 0"
+      @loaderInterval = setInterval ->
+        @loaderPosition = if ++@loaderPosition < 6 then @loaderPosition else 0
+        (@$ '#loader').css 'background-position': "#{@loaderPosition}px 0"
       , 12
       (@$ '#loader').slideDown @time, => callback()
     else
       (@$ '#loader').slideUp @time, =>
-        clearInterval @loader.interval
+        clearInterval @loaderInterval
         return callback()
 
   notify: (text = null, type = 'normal') ->

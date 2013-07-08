@@ -216,6 +216,7 @@ io = ( ->
 
     socket.on 'init', ->
       socket.emit 'init',
+        version: '4.0.2'
         sitename: process.env.SITENAME
 
     if session
