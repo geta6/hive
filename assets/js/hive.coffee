@@ -336,13 +336,13 @@ class Hive
       for nav, i in navi
         (@$ '#guides div').append(nav)
         (@$ '#guides div').append(($ '<span>').html ' / ') if i isnt navi.length - 1
-      (@$ '#guides div').fadeIn(@time)
-      if navi.length is 1
-        (@$ '#guides').animate marginTop: 0, @time
-        (@$ '#leader').animate marginTop: (@$ '#header').height(), @time
-      else
-        (@$ '#guides').animate marginTop: (@$ '#header').height(), @time
-        (@$ '#leader').animate marginTop: (@$ '#header').height()*2, @time
+      (@$ '#guides div').fadeIn @time/2, =>
+        if navi.length is 1
+          (@$ '#guides').animate marginTop: 0, @time
+          (@$ '#leader').animate marginTop: (@$ '#header').outerHeight(), @time
+        else
+          (@$ '#guides').animate marginTop: (@$ '#header').outerHeight(), @time
+          (@$ '#leader').animate marginTop: (@$ '#header').outerHeight() + (@$ '#guides').outerHeight(), @time
 
   negotiate: (event, success = ->) ->
     data = {}; for el in ($ event.target).find('input')
