@@ -241,10 +241,11 @@ io = ( ->
 ( ->
   io.sockets.on 'connection', (socket) ->
     session = socket.handshake.user
-    pkginfo = require path.resolve 'package.json'
 
     socket.on 'init', ->
-      socket.emit 'init', session, pkginfo
+      socket.emit 'init', session,
+        name: process.env.PROJECT_NAME
+        version: process.env.PROJECT_VERSION
 
     if session
       socket.on 'sync', (conf = {}) ->

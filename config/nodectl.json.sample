@@ -1,4 +1,5 @@
 {
+  "name": "Hive",
   "port": 3000,
   "env": "production",
   "watch": true,
@@ -8,9 +9,8 @@
   "main": "config/app.coffee",
   "exec": "config/ini.coffee",
   "setenv": {
-    "ROOTDIR": "/media/var",
-    "SESSION_SECRET": "keyboard",
-    "SITENAME": "Hive",
-    "MONGODB": "mongodb://localhost/hive"
+    "ROOTDIR": "/media",
+    "MONGODB": "mongodb://localhost/hive",
+    "SESSION_SECRET": "keyboardcat"
   }
 }

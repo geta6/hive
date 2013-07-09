@@ -9,7 +9,7 @@
 * ffmpeg
 * pdftk
 * python draxoft.auth.pam
-* nodectl
+* nodectl (>= 0.3.7)
 
 ```
 pip install draxoft.auth.pam
@@ -35,7 +35,7 @@ brew install imagemagick ffmpeg
 ```
 npm i -g nodectl
 npm i
-mv config/nodectl.json.sample .nodectl.json
+cp config/nodectl.json.sample .nodectl.json
 nodectl
 ```
 
@@ -60,7 +60,7 @@ server {
     expires     max;
   }
 
-  location ~* (\.html|\.txt|\.ico)$ {
+  location ~* \.html$ {
     access_log  off;
     expires     max;
   }
@@ -87,12 +87,20 @@ server {
 edit `.nodectl.json`
 
 ```
-"port" : port
-"env"  : development or production
-"setenv": {
-  "ROOTDIR"        : media root directory
-  "SESSION_SECRET" : random text for session value encrypt/decrypt
-  "SITENAME"       : site name
+{
+  "name": "Your app name",
+  "port": 3000,
+  "env": "production",
+  "assets": "assets",
+  "output": "public",
+  "minify": true,
+  "main": "config/app.coffee",
+  "exec": "config/ini.coffee",
+  "setenv": {
+    "ROOTDIR": "root directory for content",
+    "MONGODB": "mongodb uri"
+    "SESSION_SECRET": "session secret string",
+  }
 }
 ```
 
@@ -101,3 +109,4 @@ edit `.nodectl.json`
 PAM authentication.
 
 Use localuser username and password.
+
