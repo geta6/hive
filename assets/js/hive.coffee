@@ -22,6 +22,7 @@ _.mimethumb = (name, mime) ->
     when /^audio/.test mime         then '/img/audio.png'
     when /^video/.test mime         then '/img/video.png'
     when /^image/.test mime         then '/img/image.png'
+    when /pdf/.test mime            then '/img/pdf.png'
     when /image$/.test mime         then '/img/diskimage.png'
     when /^text/.test mime          then '/img/text.png'
     when /(x-c|java)/.test mime     then '/img/text.png'
