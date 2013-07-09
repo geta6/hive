@@ -2,10 +2,27 @@
 html
   head
     meta(name='viewport', content='width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no')
+    meta(content='yes', name='apple-mobile-web-app-capable')
     link(rel='stylesheet', href='//fonts.googleapis.com/css?family=Open+Sans+Condensed:300,700|Open+Sans:300,400,700')
     link(rel='stylesheet', href='//api.geta6.net/font?family=glyphicons')
     link(rel='stylesheet', href='/css/hive.css')
     link(rel='stylesheet', href='/css/icon.css')
+    //- iPhone
+    link(rel='apple-touch-icon', href='/img/icon.57.png', sizes='57x57')
+    link(rel='apple-touch-startup-image', href='/img/wall.460.png', media="(device-width:320px) and (device-height:480px) and (-webkit-device-pixel-ratio:1)")
+    //- iPhone (Retina)
+    link(rel='apple-touch-icon', href='/img/icon.114.png', sizes='114x114')
+    link(rel='apple-touch-startup-image', href='/img/wall.920.png', media="(device-width:320px) and (device-height:480px) and (-webkit-device-pixel-ratio:2)")
+    //- iPhone 5
+    link(rel='apple-touch-startup-image', href='/img/wall.1096.png', media="(device-width:320px) and (device-height:568px) and (-webkit-device-pixel-ratio:2)")
+    //- iPad
+    link(rel='apple-touch-icon', href='/img/icon.72.png', sizes='72x72')
+    link(rel='apple-touch-startup-image', href='/img/wall.1004.png', media="(device-width:768px) and (device-height:1024px) and (-webkit-device-pixel-ratio:1) and (orientation:portrait)")
+    link(rel='apple-touch-startup-image', href='/img/wall.1024.png', media="(device-width:768px) and (device-height:1024px) and (-webkit-device-pixel-ratio:1) and (orientation:landscape)")
+    //- iPad (Retina)
+    link(rel='apple-touch-icon', href='/img/icon.144.png', sizes='144x144')
+    link(rel='apple-touch-startup-image', href='/img/wall.2008.png', media="(device-width:768px) and (device-height:1024px) and (-webkit-device-pixel-ratio:2) and (orientation:portrait)")
+    link(rel='apple-touch-startup-image', href='/img/wall.2048.png', media="(device-width:768px) and (device-height:1024px) and (-webkit-device-pixel-ratio:2) and (orientation:landscape)")
     title
 
   body
