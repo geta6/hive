@@ -17,14 +17,14 @@ _.mimeicon = (mime) ->
     else                               'file'
 
 _.mimethumb = (name) ->
-  ext = name.replace /^.*(\.[^\.]*)$/
+  ext = name.replace /^.*\.([^\.]*)$/, '$1'
   return switch yes
-    when /(zip|lzh|rar|txz|tgz|gz)/i.test ext   then '/img/archive.png'
-    when /(mdf|mds|cdr|iso|bin|dmg)/i.test ext  then '/img/discimage.png'
-    when /(app|exe)/i.test ext                  then '/img/application.png'
-    when /(mp3|wav|wma)/i.test ext              then '/img/audio.png'
-    when /(txt|md|rtf|sh)/i.test ext            then '/img/text.png'
-    when /(ttf|otf)/i.test ext                  then '/img/font.png'
+    when /^(zip|lzh|rar|txz|tgz|gz)$/i.test ext   then '/img/archive.png'
+    when /^(mdf|mds|cdr|iso|bin|dmg)$/i.test ext  then '/img/discimage.png'
+    when /^(app|exe)$/i.test ext                  then '/img/application.png'
+    when /^(mp3|wav|wma)$/i.test ext              then '/img/audio.png'
+    when /^(txt|md|rtf|sh)$/i.test ext            then '/img/text.png'
+    when /^(ttf|otf)$/i.test ext                  then '/img/font.png'
     else                                             '/img/default.png'
 
 _.playable = (mime) ->
@@ -79,7 +79,7 @@ class Hive
             (@$ '#leader').html @render 'unauth'
           success: (@user) =>
             @user.conf or= {}
-            @user.conf = _.defaults { sort: '-time', view: 'lines' }, @user.conf
+            @user.conf = _.defaults @user.conf, { sort: '-time', view: 'lines' }
             @sync()
             @initialize()
 

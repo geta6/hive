@@ -148,7 +148,7 @@ app = ( ->
     return res.json 204, {}
 
   app.get /\/(.*)\.thumbnail$/, (req, res) ->
-    ext = path.extname res._thumbnail.name
+    ext = path.extname path.basename res._thumbnail.path
     res.redirect switch true
       when /(zip|lzh|rar|txz|tgz|gz)/i.test ext  then '/img/archive.png'
       when /(mdf|mds|cdr|iso|bin|dmg)/i.test ext then '/img/discimage.png'
@@ -251,6 +251,7 @@ io = ( ->
       socket.on 'sync', (conf = {}) ->
         User.findById session._id, (err, user) ->
           user.conf = _.defaults conf, user.conf
+          console.log 'sync', user.conf
           user.save -> socket.emit 'sync', user
 
       socket.on 'note', (type, body, data) ->
