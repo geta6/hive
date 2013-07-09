@@ -1,7 +1,7 @@
 {
   "port": 3000,
   "env": "production",
-  "watch": false,
+  "watch": true,
   "assets": "assets",
   "output": "public",
   "minify": true,
@@ -10,6 +10,7 @@
   "setenv": {
     "ROOTDIR": "/media/var",
     "SESSION_SECRET": "keyboard",
-    "SITENAME": "Hive"
+    "SITENAME": "Hive",
+    "MONGODB": "mongodb://localhost/hive"
   }
 }
