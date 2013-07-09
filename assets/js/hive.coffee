@@ -2,18 +2,30 @@ $ -> new Hive()
 
 _.unitconv = (size, mime, i = 0) ->
   return "#{size} items" if mime is 'text/directory'
-  units = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+  units = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB']
   ++i while (size/=1024) >= 1024
   return "#{size.toFixed(2)} #{units[i+1]}"
 
 _.mimeicon = (mime) ->
-  if mime is 'text/directory' then return 'folder_open'
-  if /video/.test mime then return 'facetime_video'
-  if /audio/.test mime then return 'music'
-  if /image/.test mime then return 'picture'
-  if /pdf/.test mime   then return 'book_open'
-  if /text/.test mime  then return 'notes'
-  return 'file'
+  return switch yes
+    when mime is 'text/directory' then 'folder_open'
+    when /video/.test mime        then 'facetime_video'
+    when /audio/.test mime        then 'music'
+    when /image/.test mime        then 'picture'
+    when /pdf/.test mime          then 'book_open'
+    when /text/.test mime         then 'notes'
+    else                               'file'
+
+_.mimethumb = (name) ->
+  ext = name.replace /^.*(\.[^\.]*)$/
+  return switch yes
+    when /(zip|lzh|rar|txz|tgz|gz)/i.test ext   then '/img/archive.png'
+    when /(mdf|mds|cdr|iso|bin|dmg)/i.test ext  then '/img/discimage.png'
+    when /(app|exe)/i.test ext                  then '/img/application.png'
+    when /(mp3|wav|wma)/i.test ext              then '/img/audio.png'
+    when /(txt|md|rtf|sh)/i.test ext            then '/img/text.png'
+    when /(ttf|otf)/i.test ext                  then '/img/font.png'
+    else                                             '/img/plain.png'
 
 _.playable = (mime) ->
   return 'audio' if /audio/.test mime
@@ -28,61 +40,54 @@ class Hive
   time: 120
   user: {}
 
-  site: 'Hive'
-
   cache: {}
 
   socket: null
-  lastdata: {}
-
   resurrect: ->
   connected: no
-  initialized: no
-  imageloaded: no
+
+  pkginfo: {}
+  lastdata: {}
+
+  authorized: no
+  lazyloaded: no
 
   constructor: ->
 
     if typeof io is 'undefined'
       return (@$ '#leader').html @render 'errors', message: 'Server is down.'
-    else
-      @socket = io.connect "http://#{window.location.host}"
-      window.io = null
 
-    @socket.on 'init', (conf) =>
-      @site = conf.sitename
-      @notify "hive version #{conf.version}"
+    @socket = io.connect "http://#{window.location.host}"
+    window.io = null
+
+    @socket.on 'init', (@user, @pkginfo) =>
+      @notify "#{pkginfo.name} version #{pkginfo.version}"
 
     @socket.on 'disconnect', =>
-      @notify 'socket disconnected', 'failure'
       @connected = no
+      @notify 'socket disconnected', 'failure'
 
     @socket.on 'connect', =>
+      @connected = yes
       @socket.emit 'init'
       @notify 'socket connected', 'success'
-      @connected = yes
       @resurrect()
       unless @initialized
         $.ajax '/session',
-          type: 'GET'
           dataType: 'JSON'
           error: (xhr) =>
-            (@$ '#leader').html @render 'visits'
+            (@$ '#leader').html @render 'unauth'
           success: (@user) =>
             @user.conf or= {}
-            @user.conf.sort or= '-time'
-            @user.conf.view or= 'lines'
+            @user.conf = _.defaults { sort: '-time', view: 'lines' }, @user.conf
             @sync()
             @initialize()
 
     ($ document).on 'submit', (event) =>
-      unless ($ event.target).hasClass 'passthrough'
-        event.preventDefault()
-      if ($ event.target).hasClass 'negotiation'
-        return @negotiate event
-      if ($ event.target).hasClass 'playstation'
-        return @playstate event
-      if ($ event.target).hasClass 'datafind'
-        return @datafind event
+      event.preventDefault() unless ($ event.target).hasClass 'passthrough'
+      return @negotiate event if ($ event.target).hasClass 'negotiation'
+      return @playstate event if ($ event.target).hasClass 'playstation'
+      return @datafind event if ($ event.target).hasClass 'datafind'
 
   initialize: ->
     unless @initialized
@@ -91,16 +96,14 @@ class Hive
 
       (@$ '.navi, .site').fadeIn @time
 
-      @socket.on 'sync', (err, @user) =>
+      @socket.on 'sync', (@user) =>
         ($ window).trigger 'synchronized'
 
       @socket.on 'start', (data) =>
         @socket.current = window.location.hash
         title = _.last data.query.path.split '/'
-        if title
-          (@$ 'title').text "#{@site}・#{title}"
-        else
-          (@$ 'title').text "#{@site}"
+        (@$ 'title').text "#{@pkginfo.name}"
+        (@$ 'title').text "#{@pkginfo.name}・#{title}" if title
         (@$ '#header li').removeClass 'selected'
         (@$ '#latest50').addClass 'selected' if /stream/.test data.query.term
         (@$ '#datafind').addClass 'selected' if /^search\//.test data.query.term
@@ -121,7 +124,8 @@ class Hive
         @playstate null, data
 
       @socket.on 'error', (err) =>
-        (@$ '#leader').append @render 'errors'
+        (@$ '#leader').append @render 'errors', message: err
+        @loader no
 
       # View mode
 
@@ -194,12 +198,13 @@ class Hive
           (@$ '#video').get(0).pause()
 
       ($ document).on 'click', '.handle_back', =>
-        @socket.emit 'skip', _.extend @lastdata, dest: 'prev'
+        @socket.emit 'prev', @lastdata
 
       ($ document).on 'click', '.handle_next', =>
-        @socket.emit 'skip', _.extend @lastdata, dest: 'next'
+        @socket.emit 'next', @lastdata
 
       (@$ '#audio, #video').on 'play', (event) =>
+        @loader no
         if 0 < ($ event.target).attr('src').length
           @notify "<i class='icon play'></i> #{_.last ($ event.target).attr('src').split '/'}"
           ($ '.handle_play').find('i').removeClass('play').addClass('pause')
@@ -210,7 +215,7 @@ class Hive
           ($ '.handle_play').find('i').removeClass('pause').addClass('play')
 
       (@$ '#audio, #video').on 'ended', =>
-        @socket.emit 'skip', _.extend @lastdata, dest: 'next'
+        @socket.emit 'next', @lastdata
 
       (@$ '#jumps').on 'keyup', (event) =>
         if event.keyCode is 13
@@ -227,6 +232,11 @@ class Hive
         page-- if w/2 > x
         @pagejump page
 
+      # Image Viewer Size
+
+      ($ window).on 'resize', =>
+        (@$ '#pages').css maxHeight: ($ document).height() - 10
+
       # Location
 
       ($ window).on 'hashchange', =>
@@ -238,7 +248,7 @@ class Hive
           (@$ '#leader').html('').show()
           @viewmode @user.conf.view
           @viewsort @user.conf.sort
-          @imageloaded = no
+          @lazyloaded = no
           if @connected
             @socket.emit 'fetch', _.extend @locate(), @user.conf
           else
@@ -246,12 +256,20 @@ class Hive
               @resurrect = ->
               @socket.emit 'fetch', _.extend @locate(), @user.conf
 
-      ($ window).trigger('hashchange')
+      ($ window).trigger 'hashchange'
+      ($ window).trigger 'resize'
 
-  pagejump: (page = 1) ->
-    @notify "page #{page}"
-    src = (@$ '#pages').attr 'src'
-    (@$ '#pages').attr 'src', src.replace(/^(.*)\?page=[0-9]*$/, '$1') + "?page=#{page}"
+  pagejump: (page = 1, src = null) ->
+    @loader yes
+    @notify "loading page #{page}"
+    unless src
+      src = (@$ '#pages').attr 'src'
+    src = src.replace(/^(.*)\?page=[0-9]*$/, '$1') + "?page=#{page}"
+    img = new Image
+    img.onload = =>
+      @loader no
+      (@$ '#pages').attr 'src', src
+    img.src = src
     (@$ '#jumps').val page
 
   datafind: (event) ->
@@ -336,9 +354,13 @@ class Hive
       (@$ '#video').hide().attr 'src', ''
       (@$ '#jumps').show().val(1)
       __target = (@$ '#pages')
+      @pagejump 1, src
 
     if src isnt __target.attr 'src'
-      __target.show().attr 'src', src
+      __target.show()
+      if 'jumps' isnt __target.attr 'id'
+        @loader yes
+        __target.attr 'src', src
       @notify "loading #{_.last src.split '/'}"
       (@$ '#player .viewer').html @render 'viewer', @lastdata
       __target[0].play() if __target[0].play
@@ -360,7 +382,12 @@ class Hive
       path: (window.location.hash.split '::')[0].substr 1
       term: (window.location.hash.split '::')[1]
     location.path = '/' if 0 is location.path.length
-    return location
+    try
+      location.path = decodeURI location.path
+    catch e
+      location.path = decodeURI location.path.replace '%', '%25'
+    finally
+      return location
 
   loaderPosition: 0
   loaderInterval: null
@@ -409,7 +436,7 @@ class Hive
       ($ window).trigger('hashchange') unless force
 
   lazyload: ->
-    if !@imageloaded and @user.conf.view is 'thumb'
-      @imageloaded = yes
+    if !@lazyloaded and @user.conf.view is 'thumb'
+      @lazyloaded = yes
       ($ '.lazy').lazyload failure_limit: 3
       setTimeout (=> ($ window).resize()), @time * 2

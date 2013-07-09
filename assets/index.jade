@@ -57,10 +57,10 @@ html
         audio#audio(autoplay, controls)
         video#video(autoplay, controls)
         input#jumps
-        img#pages()
+        img#pages
 
-    script#tp_visits(type='text/template')
-      form.visits.negotiation(action='/session', method='POST')
+    script#tp_unauth(type='text/template')
+      form.unauth.negotiation(action='/session', method='POST')
         input(type='username', name='username', placeholder='username', autofocus)
         input(type='password', name='password', placeholder='password')
         button(type='submit') SIGN IN
@@ -68,7 +68,7 @@ html
     script#tp_leader(type='text/template')
       a.leader(href='\#{{ path }}', class='{{ view }}')
         .view
-          img.lazy(src='', data-original='{{ path }}.thumbnail', width='80px', height='80px')
+          img.lazy(src='{{ _.mimethumb(name) }}', data-original='{{ path }}.thumbnail', width='80px', height='80px')
         .info
           span.icon: i.icon(class='{{ _.mimeicon(mime) }}')
           span.name {{ name }}

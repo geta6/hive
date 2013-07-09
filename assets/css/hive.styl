@@ -236,7 +236,7 @@ input, button
         height $lowergrid
         border 1px solid $bordercolor
 
-  .visits
+  .unauth
     margin 0 auto
     padding $upperpads
     max-width 300px
@@ -322,8 +322,12 @@ input, button
         border 1px solid $bordercolor
         background $bordercolor
 
-  audio, video, img
+  audio, video
     width 100%
+  img
+    display block
+    margin 0 auto
+    max-width 100%
 
   audio[src=''], video[src=''], img[src='']
     display none
