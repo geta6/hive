@@ -240,11 +240,12 @@ input, button
   .unauth
     margin 0 auto
     padding $upperpads
-    max-width 300px
+    max-width 360px
     input, button
       padding 0 $lowerpads
       width 100%
-      height $lowergrid
+      height $lowergrid*1.5
+      font-size 16px
       border 1px solid $bordercolor
       border-top none
       &:first-child
@@ -283,7 +284,7 @@ input, button
   overflow auto
   color white
   .viewer
-    margin-bottom $upperpads
+    margin-bottom ($lowergrid/2)
     text-align center
     .view
       padding ($lowergrid/2)
@@ -312,19 +313,20 @@ input, button
       form
         display inline-block
         margin-right ($lowergrid/2)
-        margin-bottom ($lowergrid/2)
         &:last-child
           margin-right 0
-      button
-        padding 0 $lowerpads
-        min-width ($lowergrid*2)
-        font-size 13px
-        height $lowergrid
-        border 1px solid $bordercolor
-        background $bordercolor
+
+  button
+    padding 0 $lowerpads
+    min-width ($lowergrid*2)
+    font-size 13px
+    height $lowergrid
+    border 1px solid $bordercolor
+    background $bordercolor
 
   audio, video
     width 100%
+
   img
     display block
     margin 0 auto
@@ -333,13 +335,31 @@ input, button
   audio[src=''], video[src=''], img[src='']
     display none
 
-  #jumps
-    display block
+  #pageguide
     margin 0 auto ($lowergrid/2) auto
+    width 100%
+    text-align center
+
+  #fullp
+    display none
+    location fixed 0 0 0 0
+    padding $lowergrid
+    text-align left
+    background-color black
+    background-repeat no-repeat
+    background-size contain
+    background-position 50% 50%
+
+  #jumps
+    margin-right ($lowergrid/2)
+    padding 0 $lowerpads
+    width ($lowergrid*4 + $lowergrid/2)
+    height $lowergrid
     background $groundcolor
-    font-size 14px
+    font-size 13px
     font-weight bold
     text-align center
+    border 1px solid $bordercolor
 
 #errors
   padding 50px 25px

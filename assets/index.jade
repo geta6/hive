@@ -1,28 +1,29 @@
 !!! 5
 html
   head
-    meta(name='viewport', content='width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no')
+    meta(name='viewport', content='initial-scale=1.0, minimum-scale=1.0, maximum-scale=2.0, user-scalable=yes')
     meta(content='yes', name='apple-mobile-web-app-capable')
     link(rel='stylesheet', href='//fonts.googleapis.com/css?family=Open+Sans+Condensed:300,700|Open+Sans:300,400,700')
     link(rel='stylesheet', href='//api.geta6.net/font?family=glyphicons')
     link(rel='stylesheet', href='/css/hive.css')
     link(rel='stylesheet', href='/css/icon.css')
     //- iPhone
-    link(rel='apple-touch-icon', href='/img/icon.57.png', sizes='57x57')
-    link(rel='apple-touch-startup-image', href='/img/wall.460.png', media="(device-width:320px) and (device-height:480px) and (-webkit-device-pixel-ratio:1)")
+    link(rel='apple-touch-icon-precomposed', href='/img/app/icon.57.png', sizes='57x57')
+    link(rel='apple-touch-startup-image', href='/img/app/wall.460.png', media="(device-width:320px) and (device-height:480px) and (-webkit-device-pixel-ratio:1)")
     //- iPhone (Retina)
-    link(rel='apple-touch-icon', href='/img/icon.114.png', sizes='114x114')
-    link(rel='apple-touch-startup-image', href='/img/wall.920.png', media="(device-width:320px) and (device-height:480px) and (-webkit-device-pixel-ratio:2)")
+    link(rel='apple-touch-icon-precomposed', href='/img/app/icon.114.png', sizes='114x114')
+    link(rel='apple-touch-startup-image', href='/img/app/wall.920.png', media="(device-width:320px) and (device-height:480px) and (-webkit-device-pixel-ratio:2)")
     //- iPhone 5
-    link(rel='apple-touch-startup-image', href='/img/wall.1096.png', media="(device-width:320px) and (device-height:568px) and (-webkit-device-pixel-ratio:2)")
+    link(rel='apple-touch-startup-image', href='/img/app/wall.1096.png', media="(device-width:320px) and (device-height:568px) and (-webkit-device-pixel-ratio:2)")
     //- iPad
-    link(rel='apple-touch-icon', href='/img/icon.72.png', sizes='72x72')
-    link(rel='apple-touch-startup-image', href='/img/wall.1004.png', media="(device-width:768px) and (device-height:1024px) and (-webkit-device-pixel-ratio:1) and (orientation:portrait)")
-    link(rel='apple-touch-startup-image', href='/img/wall.1024.png', media="(device-width:768px) and (device-height:1024px) and (-webkit-device-pixel-ratio:1) and (orientation:landscape)")
+    link(rel='apple-touch-icon-precomposed', href='/img/app/icon.72.png', sizes='72x72')
+    link(rel='apple-touch-startup-image', href='/img/app/wall.1004.png', media="(device-width:768px) and (device-height:1024px) and (-webkit-device-pixel-ratio:1) and (orientation:portrait)")
+    link(rel='apple-touch-startup-image', href='/img/app/wall.1024.png', media="(device-width:768px) and (device-height:1024px) and (-webkit-device-pixel-ratio:1) and (orientation:landscape)")
     //- iPad (Retina)
-    link(rel='apple-touch-icon', href='/img/icon.144.png', sizes='144x144')
-    link(rel='apple-touch-startup-image', href='/img/wall.2008.png', media="(device-width:768px) and (device-height:1024px) and (-webkit-device-pixel-ratio:2) and (orientation:portrait)")
-    link(rel='apple-touch-startup-image', href='/img/wall.2048.png', media="(device-width:768px) and (device-height:1024px) and (-webkit-device-pixel-ratio:2) and (orientation:landscape)")
+    link(rel='apple-touch-icon-precomposed', href='/img/app/icon.144.png', sizes='144x144')
+    link(rel='apple-touch-startup-image', href='/img/app/wall.2008.png', media="(device-width:768px) and (device-height:1024px) and (-webkit-device-pixel-ratio:2) and (orientation:portrait)")
+    link(rel='apple-touch-startup-image', href='/img/app/wall.2048.png', media="(device-width:768px) and (device-height:1024px) and (-webkit-device-pixel-ratio:2) and (orientation:landscape)")
+    link(rel='shortcut icon', href='/img/app/favicon.ico')
     title
 
   body
@@ -73,7 +74,11 @@ html
       .player
         audio#audio(autoplay, controls)
         video#video(autoplay, controls)
-        input#jumps
+        #pageguide
+          input#jumps
+          button#ofull: i.icon.resize_full
+          #fullp
+            button#xfull: i.icon.resize_small
         img#pages
 
     script#tp_unauth(type='text/template')

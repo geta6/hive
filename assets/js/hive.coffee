@@ -202,6 +202,9 @@ class Hive
         return null if ($ event.target)[0].tagName is 'VIDEO'
         return null if ($ event.target)[0].tagName is 'IMG'
         return null if ($ event.target)[0].tagName is 'INPUT'
+        return null if ($ event.target)[0].tagName is 'BUTTON'
+        return null if ($ event.target)[0].tagName is 'I'
+        return null if ($ event.target)[0].id      is 'fullp'
         @player no
 
       # Media
@@ -238,21 +241,26 @@ class Hive
         if event.keyCode is 13
           @pagejump (@$ '#jumps').val()
 
-      (@$ '#pages').on 'click', (event) =>
+      (@$ '#pages, #fullp').on 'click', (event) =>
+        return null if ($ event.target)[0].tagName is 'BUTTON'
+        return null if ($ event.target)[0].tagName is 'I'
         __target = ($ event.target)
         x = event.pageX - __target.offset().left
         w = __target.width()
-        src = __target.attr 'src'
+        src = (@$ '#pages').attr 'src'
         page = src.replace(/^.*\?page=([0-9]*)$/, '$1')
         page = 1 if src is page
         page++ if w/2 < x
         page-- if w/2 > x
         @pagejump page
 
+      (@$ '#ofull').on 'click', => (@$ '#fullp').fadeIn @time
+      (@$ '#xfull').on 'click', => (@$ '#fullp').fadeOut @time
+
       # Image Viewer Size
 
       ($ window).on 'resize', =>
-        (@$ '#pages').css maxHeight: ($ document).height() - 10
+        (@$ '#pages').css maxHeight: ($ document).height() - 50
 
       # Location
 
@@ -279,12 +287,12 @@ class Hive
   pagejump: (page = 1, src = null) ->
     @loader yes
     @notify "loading page #{page}"
-    unless src
-      src = (@$ '#pages').attr 'src'
+    src = (@$ '#pages').attr 'src' unless src
     src = src.replace(/^(.*)\?page=[0-9]*$/, '$1') + "?page=#{page}"
     img = new Image
     img.onload = =>
       @loader no
+      (@$ '#fullp').css 'background-image', "url('#{src.replace "'", "\\'"}')"
       (@$ '#pages').attr 'src', src
     img.src = src
     (@$ '#jumps').val page
@@ -360,33 +368,30 @@ class Hive
     if type is 'audio'
       hides.push (@$ '#pages')
       hides.push (@$ '#video')
-      __target = (@$ '#audio')
+      show = (@$ '#audio')
     if type is 'video'
-      hides.push (@$ '#jumps')
       hides.push (@$ '#pages')
       hides.push (@$ '#audio')
-      __target = (@$ '#video')
+      show = (@$ '#video')
     if type is 'pages'
-      (@$ '#jumps').show().val(1)
+      (@$ '#pageguide').show().find('#jumps').val(1)
       hides.push (@$ '#audio')
       hides.push (@$ '#video')
-      __target = (@$ '#pages')
-      @pagejump 1, src
+      show = (@$ '#pages')
     else
-      (@$ '#jumps').hide()
+      (@$ '#pageguide').hide()
 
     for hide in hides
       hide.hide().css({position:'fixed', top: '-1000px'}).attr 'src', ''
 
-    if src isnt __target.attr 'src'
+    if src isnt (String show.attr('src')).replace /\?.*$/, ''
       @playdata = _.clone @lastdata
-      __target.css({position: 'static', top: 'auto'}).show()
-      if 'jumps' isnt __target.attr 'id'
-        @loader yes
-        __target.attr 'src', src
-      # @notify "loading #{_.last src.split '/'}"
+      @pagejump(1, src) if type is 'pages'
+      show.css({position: 'static', top: 'auto'}).show()
+      @loader yes
+      show.attr 'src', src
       (@$ '#player .viewer').html @render 'viewer', @playdata
-      __target[0].play() if __target[0].play
+      show[0].play() if show[0].play
 
     (@$ '#handle_show').css(backgroundImage: "url('#{src}.thumbnail')")
     @player showplayer if showplayer isnt 'auto'
