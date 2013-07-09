@@ -25,7 +25,7 @@ _.mimethumb = (name) ->
     when /(mp3|wav|wma)/i.test ext              then '/img/audio.png'
     when /(txt|md|rtf|sh)/i.test ext            then '/img/text.png'
     when /(ttf|otf)/i.test ext                  then '/img/font.png'
-    else                                             '/img/plain.png'
+    else                                             '/img/default.png'
 
 _.playable = (mime) ->
   return 'audio' if /audio/.test mime
