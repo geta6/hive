@@ -78,6 +78,7 @@ class Hive
     window.io = null
 
     @socket.on 'init', (@user, @pkginfo) =>
+      (@$ 'title').text "#{@pkginfo.name}"
       @notify "#{pkginfo.name} version #{pkginfo.version}"
 
     @socket.on 'disconnect', =>
