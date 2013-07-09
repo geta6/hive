@@ -283,6 +283,7 @@ io = ( ->
             else
               res = _.stat.mapdir src, no
             if res.length is 0
+              socket.emit 'start', { query: query, length: 0 }
               socket.emit 'error', 'No result.'
               socket.emit 'end'
             else

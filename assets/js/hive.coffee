@@ -337,9 +337,12 @@ class Hive
         (@$ '#guides div').append(nav)
         (@$ '#guides div').append(($ '<span>').html ' / ') if i isnt navi.length - 1
       (@$ '#guides div').fadeIn(@time)
-      (@$ '#guides').animate
-        marginTop: if navi.length is 1 then 0 else (@$ '#header').height()
-      , @time, =>
+      if navi.length is 1
+        (@$ '#guides').animate marginTop: 0, @time
+        (@$ '#leader').animate marginTop: (@$ '#header').height(), @time
+      else
+        (@$ '#guides').animate marginTop: (@$ '#header').height(), @time
+        (@$ '#leader').animate marginTop: (@$ '#header').height()*2, @time
 
   negotiate: (event, success = ->) ->
     data = {}; for el in ($ event.target).find('input')
