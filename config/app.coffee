@@ -147,17 +147,6 @@ app = ( ->
     req.logout()
     return res.json 204, {}
 
-  app.get /\/(.*)\.thumbnail$/, (req, res) ->
-    ext = path.extname path.basename res._thumbnail.path
-    res.redirect switch true
-      when /(zip|lzh|rar|txz|tgz|gz)/i.test ext  then '/img/archive.png'
-      when /(mdf|mds|cdr|iso|bin|dmg)/i.test ext then '/img/discimage.png'
-      when /(app|exe)/i.test ext                 then '/img/application.png'
-      when /(mp3|wav|wma)/i.test ext             then '/img/audio.png'
-      when /(txt|md|rtf|sh)/i.test ext           then '/img/text.png'
-      when /(ttf|otf)/i.test ext                 then '/img/font.png'
-      else                                            '/img/unknown.png'
-
   app.get /.*/, (req, res) ->
     unless req.isAuthenticated()
       res.statusCode = 401

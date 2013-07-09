@@ -66,9 +66,10 @@ html
         button(type='submit') SIGN IN
 
     script#tp_leader(type='text/template')
+      <% __thumb__ = _.mimethumb(name, mime) %>
       a.leader(href='\#{{ path }}', class='{{ view }}')
         .view
-          img.lazy(src='{{ _.mimethumb(name) }}', data-original='{{ path }}.thumbnail', width='80px', height='80px')
+          img.lazy(src='{{ __thumb__ }}', data-original='{{ path }}.thumbnail?fallback={{ __thumb__ }}', width='80px', height='80px')
         .info
           span.icon: i.icon(class='{{ _.mimeicon(mime) }}')
           span.name {{ name }}

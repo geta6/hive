@@ -16,16 +16,31 @@ _.mimeicon = (mime) ->
     when /text/.test mime         then 'notes'
     else                               'file'
 
-_.mimethumb = (name) ->
-  ext = name.replace /^.*\.([^\.]*)$/, '$1'
+_.mimethumb = (name, mime) ->
   return switch yes
-    when /^(zip|lzh|rar|txz|tgz|gz)$/i.test ext   then '/img/archive.png'
-    when /^(mdf|mds|cdr|iso|bin|dmg)$/i.test ext  then '/img/discimage.png'
-    when /^(app|exe)$/i.test ext                  then '/img/application.png'
-    when /^(mp3|wav|wma)$/i.test ext              then '/img/audio.png'
-    when /^(txt|md|rtf|sh)$/i.test ext            then '/img/text.png'
-    when /^(ttf|otf)$/i.test ext                  then '/img/font.png'
-    else                                             '/img/default.png'
+    when mime is 'text/directory'   then '/img/directory.png'
+    when /^audio/.test mime         then '/img/audio.png'
+    when /^video/.test mime         then '/img/video.png'
+    when /^image/.test mime         then '/img/image.png'
+    when /image$/.test mime         then '/img/diskimage.png'
+    when /^text/.test mime          then '/img/text.png'
+    when /(x-c|java)/.test mime     then '/img/text.png'
+    when /font/.test mime           then '/img/font.png'
+    when /(zip|compress)/.test mime then '/img/archive.png'
+    else
+      ext = name.replace /^.*\.([^\.]*)$/, '$1'
+      switch yes
+        when /^(txz|tgz|gz)$/i.test ext                    then '/img/archive.png'
+        when /^(mdf|mds|cdr|bin)$/i.test ext               then '/img/discimage.png'
+        when /^(app|exe|ipa)$/i.test ext                   then '/img/application.png'
+        when /^(md|rtf|cue)$/i.test ext                    then '/img/text.png'
+        when /^(ttf|otf)$/i.test ext                       then '/img/font.png'
+        when /^(docx|doc|pages)$/i.test ext                then '/img/document.png'
+        when /^(xls|xlsx|numbers)$/i.test ext              then '/img/spreadsheet.png'
+        when /^(ppt|pptx|key)$/i.test ext                  then '/img/presentation.png'
+        when /^(ac3|amr|flac|ra)$/i.test ext               then '/img/audio.png'
+        when /^(ts|dvd|dvr-ms|wmv|rm|rmvb|ogm)$/i.test ext then '/img/video.png'
+        else '/img/default.png'
 
 _.playable = (mime) ->
   return 'audio' if /audio/.test mime
