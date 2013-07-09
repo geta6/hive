@@ -251,7 +251,6 @@ io = ( ->
       socket.on 'sync', (conf = {}) ->
         User.findById session._id, (err, user) ->
           user.conf = _.defaults conf, user.conf
-          console.log 'sync', user.conf
           user.save -> socket.emit 'sync', user
 
       socket.on 'note', (type, body, data) ->
