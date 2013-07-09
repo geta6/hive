@@ -263,7 +263,7 @@ io = ( ->
         src = path.dirname path.join process.env.ROOTDIR, data.path
         if fs.existsSync src
           index = i - 1 for stat, i in (stats = _.stat.mapdir src) when stat.name is data.name
-          index = 0 if typeof stats[index] is 'undefined'
+          index = (stats.length - 1) if typeof stats[index] is 'undefined'
           return socket.emit 'skip', stats[index]
         return socket.emit 'skip', {}
 

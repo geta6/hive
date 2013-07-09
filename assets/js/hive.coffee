@@ -41,7 +41,7 @@ _.mimethumb = (name, mime) ->
         when /^(ppt|pptx|key)$/i.test ext                  then '/img/presentation.png'
         when /^(ac3|amr|flac|ra)$/i.test ext               then '/img/audio.png'
         when /^(ts|dvd|dvr-ms|wmv|rm|rmvb|ogm)$/i.test ext then '/img/video.png'
-        else '/img/default.png'
+        else '/img/unknown.png'
 
 _.playable = (mime) ->
   return 'audio' if /audio/.test mime
@@ -63,6 +63,7 @@ class Hive
   connected: no
 
   pkginfo: {}
+  playdata: {}
   lastdata: {}
 
   authorized: no
@@ -137,7 +138,7 @@ class Hive
 
       @socket.on 'skip', (data) =>
         @lastdata = data
-        @playstate null, data
+        @playstate null, data, 'auto'
 
       @socket.on 'error', (err) =>
         (@$ '#leader').append @render 'errors', message: err
@@ -214,10 +215,10 @@ class Hive
           (@$ '#video').get(0).pause()
 
       ($ document).on 'click', '.handle_back', =>
-        @socket.emit 'prev', @lastdata
+        @socket.emit 'prev', @playdata
 
       ($ document).on 'click', '.handle_next', =>
-        @socket.emit 'next', @lastdata
+        @socket.emit 'next', @playdata
 
       (@$ '#audio, #video').on 'play', (event) =>
         @loader no
@@ -231,7 +232,7 @@ class Hive
           ($ '.handle_play').find('i').removeClass('pause').addClass('play')
 
       (@$ '#audio, #video').on 'ended', =>
-        @socket.emit 'next', @lastdata
+        @socket.emit 'next', @playdata
 
       (@$ '#jumps').on 'keyup', (event) =>
         if event.keyCode is 13
@@ -346,7 +347,7 @@ class Hive
           @notify 'sign in failure', 'failure'
         success: (@user) => window.location.reload()
 
-  playstate: (event, data) ->
+  playstate: (event, data, showplayer = yes) ->
     if event
       type = ($ event.target).attr 'method'
       src = ($ event.target).attr 'action'
@@ -355,34 +356,40 @@ class Hive
       type = 'video' if /video/.test data.mime
       type = 'pages' if /pdf/.test data.mime
       src = data.path
+    hides = []
     if type is 'audio'
-      (@$ '#pages').hide().attr 'src', ''
-      (@$ '#video').hide().attr 'src', ''
-      (@$ '#jumps').hide()
+      hides.push (@$ '#pages')
+      hides.push (@$ '#video')
       __target = (@$ '#audio')
     if type is 'video'
-      (@$ '#pages').hide().attr 'src', ''
-      (@$ '#audio').hide().attr 'src', ''
-      (@$ '#jumps').hide()
+      hides.push (@$ '#jumps')
+      hides.push (@$ '#pages')
+      hides.push (@$ '#audio')
       __target = (@$ '#video')
     if type is 'pages'
-      (@$ '#audio').hide().attr 'src', ''
-      (@$ '#video').hide().attr 'src', ''
       (@$ '#jumps').show().val(1)
+      hides.push (@$ '#audio')
+      hides.push (@$ '#video')
       __target = (@$ '#pages')
       @pagejump 1, src
+    else
+      (@$ '#jumps').hide()
+
+    for hide in hides
+      hide.hide().css({position:'fixed', top: '-1000px'}).attr 'src', ''
 
     if src isnt __target.attr 'src'
-      __target.show()
+      @playdata = _.clone @lastdata
+      __target.css({position: 'static', top: 'auto'}).show()
       if 'jumps' isnt __target.attr 'id'
         @loader yes
         __target.attr 'src', src
-      @notify "loading #{_.last src.split '/'}"
-      (@$ '#player .viewer').html @render 'viewer', @lastdata
+      # @notify "loading #{_.last src.split '/'}"
+      (@$ '#player .viewer').html @render 'viewer', @playdata
       __target[0].play() if __target[0].play
 
     (@$ '#handle_show').css(backgroundImage: "url('#{src}.thumbnail')")
-    @player yes
+    @player showplayer if showplayer isnt 'auto'
 
   $: (expr) ->
     @cache['dom'] or= {}
