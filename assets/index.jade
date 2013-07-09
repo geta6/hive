@@ -79,9 +79,10 @@ html
           span {{ _.unitconv(size, mime) }}
 
     script#tp_viewer(type='text/template')
+      <% __thumb__ = _.mimethumb(name, mime) %>
       .view
         a(href='\#{{ path }}')
-          img(src='{{ path }}.thumbnail', width='80px', height='80px')
+          img(src='{{ path }}.thumbnail?fallback={{ __thumb__ }}', width='80px', height='80px')
       .info
         span.icon: i.icon(class='{{ _.mimeicon(mime) }}')
         span.name {{ name }}
@@ -95,9 +96,10 @@ html
         form: button.handle_next: i.icon.fast_forward
 
     script#tp_browse(type='text/template')
+      <% __thumb__ = _.mimethumb(name, mime) %>
       .browse
         .view
-          img(src='{{ path }}.thumbnail', width='80px', height='80px')
+          img(src='{{ path }}.thumbnail?fallback={{ __thumb__ }}', width='80px', height='80px')
         .info
           span.icon: i.icon(class='{{ _.mimeicon(mime) }}')
           span.name {{ name }}
