@@ -2,7 +2,6 @@ upstream nodejs {
   server  127.0.0.1:3000;
 }
 
-# Default HTTP
 server {
   listen       80 default_server;
   charset      UTF-8;
