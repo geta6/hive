@@ -31,8 +31,6 @@ app = ( ->
 
   app.disable 'x-powered-by'
   app.set 'port', process.env.PORT
-  app.set 'views', path.resolve 'views'
-  app.set 'view engine', 'jade'
   app.use (require 'connect-thumbnail')
     path: process.env.ROOTDIR
     cache: path.resolve 'tmp', 'thumb'
