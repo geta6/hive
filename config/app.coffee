@@ -206,7 +206,7 @@ io = ( ->
       return /^(\.DS.+|Network Trash Folder|Temporary Items|\.Apple.*|Thumbs.db)$/i.test src
     status: (src) ->
       stat = fs.statSync src
-      regex = new RegExp '^'+process.env.ROOTDIR.replace /\//g, '\\/'
+      regex = new RegExp "^#{process.env.ROOTDIR.replace /\//g, "\\/"}"
       path: src.replace regex, ''
       name: path.basename src
       mime: if stat.isDirectory() then 'text/directory' else mime.lookup src
