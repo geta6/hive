@@ -203,7 +203,7 @@ io = ( ->
       list = _.reject list, (src) -> return _.stat.reject src
       return _.map list, (src) -> _.stat.status src
     reject: (src) ->
-      return /^(\.DS.+|Network Trash Folder|Temporary Items|\.Apple.*|Thumbs.db)$/i.test src
+      return /^(\.DS.+|Network Trash Folder|Temporary Items|\.Apple.*|Thumbs.db|.*\.tmp)$/i.test src
     status: (src) ->
       stat = fs.statSync src
       regex = new RegExp "^#{process.env.ROOTDIR.replace /\//g, "\\/"}"
